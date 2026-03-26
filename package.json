@@ -1,0 +1,23 @@
+{
+  "name": "meet-and-move",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Youtmax654/Meet-and-Move#readme",
+  "bugs": {
+    "url": "https://github.com/Youtmax654/Meet-and-Move/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Youtmax654/Meet-and-Move.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "scripts": {
+    "start:mobile": "cd mobile && npm run start",
+    "start:api": "cd api && npm run dev",
+    "start": "mprocs \"npm run start:mobile\" \"npm run start:api\""
+  },
+  "devDependencies": {
+    "mprocs": "^0.9.2"
+  }
+}
