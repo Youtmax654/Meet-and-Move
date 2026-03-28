@@ -15,9 +15,11 @@
   "scripts": {
     "start:mobile": "cd mobile && npm run start",
     "start:api": "cd api && npm run dev",
-    "start": "mprocs \"npm run start:mobile\" \"npm run start:api\""
+    "start": "mprocs \"npm run start:mobile\" \"npm run start:api\"",
+    "install": "concurrently \"cd mobile && npm install\" \"cd api && npm install\" --names \"mobile\",\"api\""
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "mprocs": "^0.9.2"
   }
 }
