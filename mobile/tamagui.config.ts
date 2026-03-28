@@ -3,6 +3,11 @@ import { createTamagui } from 'tamagui'
 
 export const config = createTamagui({
   ...defaultConfig,
+  settings: {
+    ...defaultConfig.settings,
+    onlyAllowShorthands: false,
+    allowedStyleValues: 'somewhat-strict-web'
+  },
   media: {
     ...defaultConfig.media,
     // add your own media queries here, if wanted
