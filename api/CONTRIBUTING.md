@@ -4,7 +4,6 @@ Please read and follow this guide before contributing to the project.
 
 > [!IMPORTANT]  
 > You will have to create a new branch for each feature and make a pull request to the main branch when you're done.
-> See [CONTRIBUTING.MD](../CONTRIBUTING.MD) for more information.
 
 ## API Architecture
 

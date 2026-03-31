@@ -20,18 +20,3 @@ npm install
 # Run the app
 npm start
 ```
-
-> [!WARNING]  
-> This command might not work on Windows because of a bug in the library used to run simultaneously multiple npm scripts (mprocs).
-> 
-> To run the project on Windows, you can run the following commands in different terminals:
-> ```bash
-> // Mobile app
-> npm run start:mobile
->
-> // API
-> npm run start:api
->
-> // Database
-> npm run db:start
-> ```
