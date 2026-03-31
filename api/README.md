@@ -1,21 +1,5 @@
-```txt
-npm install
-npm run dev
-```
+## Contributing
 
-```txt
-npm run deploy
-```
+To contribute to the API, please check [CONTRIBUTING.md](CONTRIBUTING.md).
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
-
-```txt
-npm run cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
+If needed please use .env.example to create a .env file.

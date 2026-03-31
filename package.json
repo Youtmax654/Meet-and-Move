@@ -15,7 +15,10 @@
   "scripts": {
     "start:mobile": "cd mobile && npm run start",
     "start:api": "cd api && npm run dev",
-    "start": "mprocs \"npm run start:mobile\" \"npm run start:api\"",
+    "db:start": "cd db && docker compose up",
+    "db:stop": "cd db && docker compose down",
+    "db:reset": "cd db && docker compose down -v && docker compose up",
+    "start": "mprocs \"npm run start:mobile\" \"npm run start:api\" \"npm run db:start\" --names \"mobile\",\"api\",\"db\"",
     "install": "concurrently \"cd mobile && npm install\" \"cd api && npm install\" --names \"mobile\",\"api\""
   },
   "devDependencies": {

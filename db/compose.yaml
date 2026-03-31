@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: meetandmove
+      POSTGRES_PASSWORD: meet&move
+      POSTGRES_DB: meetandmove
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
