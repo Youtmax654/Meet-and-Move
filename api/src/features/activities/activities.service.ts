@@ -52,6 +52,7 @@ export const getActivityById = async (id: string, databaseUrl: string) => {
         id: row.category_id,
         name: row.category_name,
       },
+      price_breakdown: details.price_breakdown || [],
     };
   } finally {
     await sql.end();

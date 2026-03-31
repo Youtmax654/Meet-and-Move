@@ -19,4 +19,9 @@ export const activitySchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
   }).optional(),
+  price_breakdown: z.array(z.object({
+    label: z.string(),
+    amount: z.number(),
+    color: z.string(),
+  })).optional(),
 });
