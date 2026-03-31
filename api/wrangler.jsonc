@@ -2,13 +2,13 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "meet-and-move",
   "main": "src/index.ts",
-  "compatibility_date": "2026-03-26"
-  // "compatibility_flags": [
-  //   "nodejs_compat"
-  // ],
-  // "vars": {
-  //   "MY_VAR": "my-variable"
-  // },
+  "compatibility_date": "2026-03-26",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "DATABASE_URL": "postgresql://meetandmove:meet&move@localhost:5432/meetandmove"
+  },
   // "kv_namespaces": [
   //   {
   //     "binding": "MY_KV_NAMESPACE",

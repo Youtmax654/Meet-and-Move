@@ -1,7 +1,8 @@
-import { Button, View, XStack, Text } from "tamagui";
 import { Ionicons } from "@expo/vector-icons";
+import { Button, Text, View, XStack } from "tamagui";
+import { Activity } from "../../types/activity";
 
-export function ActionBar() {
+export function ActionBar({ activity }: { activity?: Activity }) {
   return (
     <View
       position="absolute"
@@ -15,7 +16,6 @@ export function ActionBar() {
       shadowColor="#000"
       shadowOpacity={0.05}
       shadowRadius={10}
-      elevation={10}
       borderTopColor="#EAEAEA"
       borderTopWidth={1}
     >
@@ -37,6 +37,9 @@ export function ActionBar() {
           borderRadius={28}
           borderWidth={0}
           backgroundColor="#E2E2E1"
+          alignItems="center"
+          justifyContent="center"
+          padding={0}
           pressStyle={{ scale: 0.98, backgroundColor: "#D1D1D1" }}
         >
           <Ionicons name="heart-outline" size={24} color="#5B5C5B" />

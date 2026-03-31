@@ -1,7 +1,8 @@
 import { Image, View, Text } from "tamagui";
 import { Ionicons } from "@expo/vector-icons";
+import { Activity } from "../../types/activity";
 
-export function HeroSection() {
+export function HeroSection({ activity }: { activity?: Activity }) {
   return (
     <View position="relative" height={268.5} width="100%" borderRadius={12} overflow="hidden">
       <Image
@@ -11,17 +12,6 @@ export function HeroSection() {
         width="100%"
         height="100%"
       />
-      {/* Gradient overlay */}
-      <View
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-        height="50%"
-        backgroundColor="rgba(0,0,0,0.4)"
-      />
-      
-      {/* Badge: Guide Local Vérifié */}
       <View
         position="absolute"
         bottom={24}
