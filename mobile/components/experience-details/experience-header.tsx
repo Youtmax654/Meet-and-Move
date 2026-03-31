@@ -1,5 +1,4 @@
 import { Text, View, XStack, YStack } from "tamagui";
-import { Ionicons } from "@expo/vector-icons";
 import { Activity } from "../../types/activity";
 
 export function ExperienceHeader({ activity }: { activity?: Activity }) {
@@ -14,20 +13,24 @@ export function ExperienceHeader({ activity }: { activity?: Activity }) {
             {activity?.duration_hours ? `${activity.duration_hours} Heures` : "Durée non précisée"}
           </Text>
         </View>
-        
+
         <View flexDirection="row" alignItems="center" backgroundColor="#F1F1F0" borderRadius={8} px={12} py={6} gap={6}>
           <Text fontSize={14} fontWeight="500" color="#2E2F2F">
-            {activity?.max_participants ? `${activity.max_participants} Max` : "Places limitées"}
+            {activity?.max_participants ? `Max ${activity.max_participants} personnes` : "Places limitées"}
           </Text>
         </View>
-        
+
         <View flexDirection="row" alignItems="center" backgroundColor="#F1F1F0" borderRadius={8} px={12} py={6} gap={6}>
           <Text fontSize={14} fontWeight="500" color="#2E2F2F">
-            {activity?.difficulty || "Tout niveau"}
+            {activity?.difficulty 
+              ? (activity.difficulty === 'easy' ? 'Débutant' : 
+                 activity.difficulty === 'medium' ? 'Intermédiaire' : 
+                 activity.difficulty === 'hard' ? 'Expert' : activity.difficulty)
+              : "Tout niveau"}
           </Text>
         </View>
       </XStack>
-      
+
       <XStack alignItems="baseline" gap={4}>
         <Text fontSize={30} fontWeight="800" color="#4953AC" lineHeight={36}>
           {activity?.price !== undefined ? `${activity.price}€` : "Gratuit"}
