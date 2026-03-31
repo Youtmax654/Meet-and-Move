@@ -1,6 +1,7 @@
 import { Text, View, XStack, YStack } from "tamagui";
+import { Activity } from "../../types/activity";
 
-export function PriceBreakdown() {
+export function PriceBreakdown({ activity }: { activity?: Activity }) {
   return (
     <YStack 
       backgroundColor="#FFFFFF" 
@@ -30,9 +31,8 @@ export function PriceBreakdown() {
           justifyContent="center"
           position="relative"
         >
-          {/* We simulate the segments. A real chart is required for arcs, but this fulfills the visually faithful layout */}
           <Text fontSize={24} fontWeight="800" color="#2E2F2F">
-            55€
+            {activity?.price !== undefined ? `${activity.price}€` : "..."}
           </Text>
           <Text fontSize={10} fontWeight="700" color="#5B5C5B" textTransform="uppercase" letterSpacing={1}>
             Total
