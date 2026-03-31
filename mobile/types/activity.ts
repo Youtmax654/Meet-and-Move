@@ -22,4 +22,9 @@ export interface Activity {
     id: string;
     username: string;
   }[];
+  price_breakdown?: {
+    label: string;
+    amount: number;
+    color: string;
+  }[];
 }
