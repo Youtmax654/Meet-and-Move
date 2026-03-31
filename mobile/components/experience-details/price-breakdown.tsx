@@ -1,29 +1,90 @@
 import React from "react";
 import { Text, View, XStack, YStack } from "tamagui";
 import { Activity } from "../../types/activity";
+import Svg, { Circle, G } from "react-native-svg";
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
   withSpring, 
   withDelay,
   withTiming,
-  Easing
+  useAnimatedProps,
+  interpolate
 } from "react-native-reanimated";
 
-export function PriceBreakdown({ activity }: { activity?: Activity }) {
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+const RADIUS = 60;
+const STROKE_WIDTH = 12;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+function DonutSegment({ 
+  percentage, 
+  offset, 
+  color, 
+  delay 
+}: { 
+  percentage: number; 
+  offset: number; 
+  color: string; 
+  delay: number;
+}) {
+  const progress = useSharedValue(0);
 
   React.useEffect(() => {
-    scale.value = withDelay(300, withSpring(1, { damping: 12 }));
-    opacity.value = withDelay(300, withTiming(1, { duration: 500 }));
+    progress.value = withDelay(delay, withTiming(1, { duration: 1000 }));
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedProps = useAnimatedProps(() => {
+    const strokeDashoffset = CIRCUMFERENCE - (CIRCUMFERENCE * percentage * progress.value);
     return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
+      strokeDashoffset,
     };
+  });
+
+  return (
+    <AnimatedCircle
+      cx="75"
+      cy="75"
+      r={RADIUS}
+      stroke={color}
+      strokeWidth={STROKE_WIDTH}
+      strokeDasharray={CIRCUMFERENCE}
+      animatedProps={animatedProps}
+      strokeLinecap="round"
+      rotation={offset * 360 - 90}
+      origin="75, 75"
+      fill="transparent"
+    />
+  );
+}
+
+export function PriceBreakdown({ activity }: { activity?: Activity }) {
+  const containerScale = useSharedValue(0.8);
+  const containerOpacity = useSharedValue(0);
+
+  React.useEffect(() => {
+    containerScale.value = withSpring(1);
+    containerOpacity.value = withTiming(1, { duration: 500 });
+  }, []);
+
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: containerScale.value }],
+    opacity: containerOpacity.value,
+  }));
+
+  // Calcul des segments
+  const total = activity?.price || 1;
+  let currentOffset = 0;
+  const segments = (activity?.price_breakdown || []).map((item) => {
+    const percentage = item.amount / total;
+    const segment = {
+      ...item,
+      percentage,
+      offset: currentOffset,
+    };
+    currentOffset += percentage;
+    return segment;
   });
 
   return (
@@ -44,36 +105,38 @@ export function PriceBreakdown({ activity }: { activity?: Activity }) {
       </Text>
       
       <YStack gap={32} alignItems="center">
-        <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, animatedStyle]}>
-          <View 
-            width={150} 
-            height={150} 
-            borderRadius={75} 
-            borderWidth={16} 
-            borderColor="#F1F1F0" 
-            alignItems="center" 
-            justifyContent="center"
-            position="relative"
-          >
+        <Animated.View style={[{ width: 150, height: 150, alignItems: 'center', justifyContent: 'center' }, animatedContainerStyle]}>
+          <Svg width={150} height={150} viewBox="0 0 150 150">
+            <G rotation={-90} origin="75, 75">
+              {/* background track */}
+              <Circle
+                cx="75"
+                cy="75"
+                r={RADIUS}
+                stroke="#F1F1F0"
+                strokeWidth={STROKE_WIDTH}
+                fill="transparent"
+              />
+              {/* Dynamic segments */}
+              {segments.map((segment, index) => (
+                <DonutSegment
+                  key={index}
+                  percentage={segment.percentage}
+                  offset={segment.offset}
+                  color={segment.color}
+                  delay={500 + index * 100}
+                />
+              ))}
+            </G>
+          </Svg>
+          
+          <View position="absolute" alignItems="center" justifyContent="center">
             <Text fontSize={24} fontWeight="800" color="#2E2F2F">
               {activity?.price !== undefined ? `${activity.price}€` : "..."}
             </Text>
             <Text fontSize={10} fontWeight="700" color="#5B5C5B" textTransform="uppercase" letterSpacing={1}>
               Total
             </Text>
-            
-            {/* Animated Ring Overlay (simulated fill) */}
-            <View 
-              position="absolute" 
-              top={-16} 
-              left={-16} 
-              right={-16} 
-              bottom={-16} 
-              borderRadius={91} 
-              borderWidth={4} 
-              borderColor="#006666"
-              opacity={0.3}
-            />
           </View>
         </Animated.View>
 
