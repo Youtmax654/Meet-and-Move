@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, YStack } from "tamagui";
 import { MessageItem, MessageItemData } from "./MessageItem";
@@ -67,6 +68,8 @@ const MOCK_MESSAGES: MessageItemData[] = [
 ];
 
 export function MessagesList() {
+  const router = useRouter();
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -75,7 +78,11 @@ export function MessagesList() {
     >
       <YStack gap="$4">
         {MOCK_MESSAGES.map((msg) => (
-          <MessageItem key={msg.id} item={msg} />
+          <MessageItem
+            key={msg.id}
+            item={msg}
+            onPress={() => router.push(`/chat/${msg.id}`)}
+          />
         ))}
       </YStack>
     </ScrollView>

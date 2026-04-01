@@ -13,7 +13,7 @@ export type MessageItemData = {
   avatarUrl?: string; // We can pass unsplash strings here
 };
 
-export function MessageItem({ item }: { item: MessageItemData }) {
+export function MessageItem({ item, onPress }: { item: MessageItemData; onPress?: () => void }) {
   return (
     <XStack
       padding="$3"
@@ -26,6 +26,8 @@ export function MessageItem({ item }: { item: MessageItemData }) {
       shadowOpacity={item.unreadCount > 0 ? 0.05 : 0}
       shadowRadius={item.unreadCount > 0 ? 2 : 0}
       shadowOffset={{ width: 0, height: 1 }}
+      onPress={onPress}
+      pressStyle={{ opacity: 0.8 }}
     >
       {/* Avatar Section */}
       <YStack>
@@ -79,7 +81,7 @@ export function MessageItem({ item }: { item: MessageItemData }) {
           </Text>
           {item.unreadCount > 0 && (
             <Circle size={20} backgroundColor="#4953AC" marginLeft="$2">
-              <Text color="#FFF" fontSize="$1" fontWeight="bold">
+               <Text color="#FFF" fontSize={10} fontWeight="bold">
                 {item.unreadCount}
               </Text>
             </Circle>
