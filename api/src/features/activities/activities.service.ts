@@ -1,60 +1,67 @@
-import postgres from "postgres";
+import { db } from "../../db";
+import { activities, users, interests, activityParticipants } from "../../db/schema";
+import { eq, sql as drizzleSql, and } from "drizzle-orm";
 
-export const getActivityById = async (id: string, databaseUrl: string) => {
-  const sql = postgres(databaseUrl);
-
+export const getActivityById = async (id: string) => {
   try {
-    const result = await sql`
-      SELECT 
-        a.id, a.title, a.description, a.latitude, a.longitude, a.max_participants, a.specific_details,
-        u.id as host_id, u.username as host_username, u.bio as host_bio,
-        i.id as category_id, i.name as category_name
-      FROM activities a
-      JOIN users u ON a.host_id = u.id
-      LEFT JOIN interests i ON a.category_id = i.id
-      WHERE a.id = ${id}
-    `;
+    const result = await db
+      .select({
+        activity: activities,
+        host: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+        },
+        category: {
+          id: interests.id,
+          name: interests.name,
+        },
+      })
+      .from(activities)
+      .innerJoin(users, eq(activities.hostId, users.id))
+      .leftJoin(interests, eq(activities.categoryId, interests.id))
+      .where(eq(activities.id, id))
+      .limit(1);
 
     if (result.length === 0) return null;
 
     const row = result[0];
-    const details = row.specific_details || {};
+    const details = (row.activity.specificDetails as any) || {};
 
     // Récupérer la liste des participants acceptés
-    const participants = await sql`
-      SELECT u.id, u.username
-      FROM activity_participants ap
-      JOIN users u ON ap.user_id = u.id
-      WHERE ap.activity_id = ${id} AND ap.status = 'accepted'
-    `;
+    const participantsList = await db
+      .select({
+        id: users.id,
+        username: users.username,
+      })
+      .from(activityParticipants)
+      .innerJoin(users, eq(activityParticipants.userId, users.id))
+      .where(
+        and(
+          eq(activityParticipants.activityId, id),
+          eq(activityParticipants.status, "accepted")
+        )
+      );
 
     return {
-      id: row.id,
-      title: row.title,
-      description: row.description,
+      id: row.activity.id,
+      title: row.activity.title,
+      description: row.activity.description,
       price: details.price,
       difficulty: details.difficulty,
       duration_hours: details.duration_hours,
-      latitude: row.latitude,
-      longitude: row.longitude,
-      max_participants: row.max_participants,
-      enrolledCount: Number(participants.length),
-      participants: participants.map(p => ({
-        id: p.id,
-        username: p.username
-      })),
-      host: {
-        id: row.host_id,
-        username: row.host_username,
-        bio: row.host_bio,
-      },
-      category: {
-        id: row.category_id,
-        name: row.category_name,
-      },
+      latitude: row.activity.latitude,
+      longitude: row.activity.longitude,
+      max_participants: row.activity.maxParticipants,
+      enrolledCount: participantsList.length,
+      participants: participantsList,
+      host: row.host,
+      category: row.category,
       price_breakdown: details.price_breakdown || [],
+      eventDate: row.activity.eventDate,
     };
-  } finally {
-    await sql.end();
+  } catch (error) {
+    console.error("Drizzle Query Error:", error);
+    throw error;
   }
 };

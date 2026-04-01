@@ -16,16 +16,16 @@ export function ExperienceHeader({ activity }: { activity?: Activity }) {
 
         <View flexDirection="row" alignItems="center" backgroundColor="#F1F1F0" borderRadius={8} px={12} py={6} gap={6}>
           <Text fontSize={14} fontWeight="500" color="#2E2F2F">
-            {activity?.max_participants ? `Max ${activity.max_participants} personnes` : "Places limitées"}
+            {activity?.enrolledCount !== undefined ? `${activity.enrolledCount}/${activity.max_participants || '?'}` + " personnes" : activity?.max_participants ? `${activity.max_participants} Max` : "Places limitées"}
           </Text>
         </View>
 
         <View flexDirection="row" alignItems="center" backgroundColor="#F1F1F0" borderRadius={8} px={12} py={6} gap={6}>
           <Text fontSize={14} fontWeight="500" color="#2E2F2F">
-            {activity?.difficulty 
-              ? (activity.difficulty === 'easy' ? 'Débutant' : 
-                 activity.difficulty === 'medium' ? 'Intermédiaire' : 
-                 activity.difficulty === 'hard' ? 'Expert' : activity.difficulty)
+            {activity?.difficulty
+              ? (activity.difficulty === 'easy' ? 'Débutant' :
+                activity.difficulty === 'medium' ? 'Intermédiaire' :
+                  activity.difficulty === 'hard' ? 'Expert' : activity.difficulty)
               : "Tout niveau"}
           </Text>
         </View>

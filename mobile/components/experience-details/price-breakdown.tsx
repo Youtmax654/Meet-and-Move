@@ -73,10 +73,20 @@ export function PriceBreakdown({ activity }: { activity?: Activity }) {
     opacity: containerOpacity.value,
   }));
 
+  // Default breakdown if missing (Fallback)
+  const defaultBreakdown = [
+    { label: "Frais de service", amount: (activity?.price || 0) * 0.2, color: "#4953AC" },
+    { label: "Organisation", amount: (activity?.price || 0) * 0.8, color: "#006666" },
+  ];
+
+  const breakdown = (activity?.price_breakdown && activity.price_breakdown.length > 0) 
+    ? activity.price_breakdown 
+    : defaultBreakdown;
+
   // Calcul des segments
   const total = activity?.price || 1;
   let currentOffset = 0;
-  const segments = (activity?.price_breakdown || []).map((item) => {
+  const segments = breakdown.map((item) => {
     const percentage = item.amount / total;
     const segment = {
       ...item,
@@ -141,7 +151,7 @@ export function PriceBreakdown({ activity }: { activity?: Activity }) {
         </Animated.View>
 
         <YStack gap={12} width="100%">
-          {activity?.price_breakdown?.map((item, index) => (
+          {breakdown.map((item, index) => (
             <XStack key={index} alignItems="center" justifyContent="space-between">
               <XStack alignItems="center" gap={12}>
                 <View width={12} height={12} borderRadius={6} backgroundColor={item.color as any} />
@@ -150,12 +160,6 @@ export function PriceBreakdown({ activity }: { activity?: Activity }) {
               <Text fontSize={14} fontWeight="700" color="#2E2F2F">{item.amount.toFixed(2)}€</Text>
             </XStack>
           ))}
-          
-          {(!activity?.price_breakdown || activity.price_breakdown.length === 0) && (
-            <Text color="#5B5C5B" textAlign="center" fontSize={14}>
-              Aucun détail disponible
-            </Text>
-          )}
         </YStack>
       </YStack>
     </YStack>
