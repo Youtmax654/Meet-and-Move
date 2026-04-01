@@ -1,8 +1,5 @@
 -- init.sql
 
--- Activer l'extension pgcrypto si besoin pour gen_random_uuid() (historique, bien que natif depuis PG13)
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR NOT NULL,
