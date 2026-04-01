@@ -1,24 +1,30 @@
-import React from 'react';
-import { Avatar, Circle, Text, XStack, YStack } from 'tamagui';
+import React from "react";
+import { Avatar, Circle, Text, XStack, YStack } from "tamagui";
 
-export type MessageItemData = {
-  id: number;
-  type: 'squad' | 'individual';
+export type InboxItemData = {
+  id: string;
+  type: "squad" | "individual";
   name: string;
   message: string;
   time: string;
   unreadCount: number;
   online: boolean;
   archived: boolean;
-  avatarUrl?: string; // We can pass unsplash strings here
+  avatarUrl?: string;
 };
 
-export function MessageItem({ item, onPress }: { item: MessageItemData; onPress?: () => void }) {
+export function InboxItem({
+  item,
+  onPress,
+}: {
+  item: InboxItemData;
+  onPress?: () => void;
+}) {
   return (
     <XStack
       padding="$3"
       gap="$3"
-      backgroundColor={item.unreadCount > 0 ? '#FFFFFF' : '#F1F1F0'}
+      backgroundColor={item.unreadCount > 0 ? "#FFFFFF" : "#F1F1F0"}
       borderRadius="$4"
       alignItems="center"
       opacity={item.archived ? 0.6 : 1}
@@ -29,16 +35,15 @@ export function MessageItem({ item, onPress }: { item: MessageItemData; onPress?
       onPress={onPress}
       pressStyle={{ opacity: 0.8 }}
     >
-      {/* Avatar Section */}
       <YStack>
         <Avatar circular size="$5">
-          <Avatar.Image src={item.avatarUrl || 'https://picsum.photos/200'} />
+          <Avatar.Image src={item.avatarUrl || "https://picsum.photos/200"} />
           <Avatar.Fallback backgroundColor="$gray5" />
         </Avatar>
         {item.online && (
           <Circle
             size={12}
-            backgroundColor="#4CAF50" // generic green for online usually, not precisely specified in node list so reusing standard
+            backgroundColor="#4CAF50"
             position="absolute"
             bottom={0}
             right={0}
@@ -48,13 +53,12 @@ export function MessageItem({ item, onPress }: { item: MessageItemData; onPress?
         )}
       </YStack>
 
-      {/* Content Section */}
       <YStack flex={1} gap="$1">
         <XStack justifyContent="space-between" alignItems="center">
           <Text
-            fontWeight={item.unreadCount > 0 ? '700' : '600'}
+            fontWeight={item.unreadCount > 0 ? "700" : "600"}
             fontSize="$4"
-            color="#1EQZID" // Actually the color in dump was slightly different, using #111
+            color="#111"
             numberOfLines={1}
             flex={1}
           >
@@ -62,26 +66,26 @@ export function MessageItem({ item, onPress }: { item: MessageItemData; onPress?
           </Text>
           <Text
             fontSize="$2"
-            color={item.unreadCount > 0 ? '#4953AC' : '#888'}
-            fontWeight={item.unreadCount > 0 ? '600' : '400'}
+            color={item.unreadCount > 0 ? "#4953AC" : "#888"}
+            fontWeight={item.unreadCount > 0 ? "600" : "400"}
           >
             {item.time}
           </Text>
         </XStack>
-        
+
         <XStack justifyContent="space-between" alignItems="center">
           <Text
             color="#5B5C5B"
             fontSize="$3"
             numberOfLines={2}
             flex={1}
-            fontWeight={item.unreadCount > 0 ? '500' : '400'}
+            fontWeight={item.unreadCount > 0 ? "500" : "400"}
           >
             {item.message}
           </Text>
           {item.unreadCount > 0 && (
             <Circle size={20} backgroundColor="#4953AC" marginLeft="$2">
-               <Text color="#FFF" fontSize={10} fontWeight="bold">
+              <Text color="#FFF" fontSize={10} fontWeight="bold">
                 {item.unreadCount}
               </Text>
             </Circle>

@@ -14,7 +14,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         return { icon: "compass", label: "Explorer" };
       case "activities":
         return { icon: "layers", label: "Activités" };
-      case "messages":
+      case "chats":
         return { icon: "chatbubble-ellipses", label: "Messages" };
       case "profil":
         return { icon: "person", label: "Profil" };

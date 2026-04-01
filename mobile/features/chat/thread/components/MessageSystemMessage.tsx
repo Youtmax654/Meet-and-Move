@@ -1,11 +1,11 @@
 import React from "react";
 import { Text, XStack } from "tamagui";
 
-interface ChatSystemMessageProps {
+interface MessageSystemMessageProps {
   text: string;
 }
 
-export function ChatSystemMessage({ text }: ChatSystemMessageProps) {
+export function MessageSystemMessage({ text }: MessageSystemMessageProps) {
   return (
     <XStack
       justifyContent="center"

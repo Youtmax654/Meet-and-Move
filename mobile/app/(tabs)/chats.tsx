@@ -1,21 +1,21 @@
-import { MessagesHeader } from "@/components/messages/MessagesHeader";
-import { MessagesList } from "@/components/messages/MessagesList";
-import { QuickFilters } from "@/components/messages/QuickFilters";
-import { SearchBar } from "@/components/messages/SearchBar";
+import { InboxHeader } from "@/features/chat/inbox/components/InboxHeader";
+import { InboxList } from "@/features/chat/inbox/components/InboxList";
+import { QuickFilters } from "@/features/chat/inbox/components/QuickFilters";
+import { SearchBar } from "@/features/chat/inbox/components/SearchBar";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Circle, YStack } from "tamagui";
 
-export default function MessagesScreen() {
+export default function ChatsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F7F6F5" }}>
       <YStack flex={1} gap="$4" backgroundColor="#F7F6F5">
-        <MessagesHeader />
+        <InboxHeader />
         <SearchBar />
         <QuickFilters />
 
-        <MessagesList />
+        <InboxList />
 
         {/* Floating Action Button */}
         <Circle

@@ -1,11 +1,11 @@
 import React from "react";
 import { Text, YStack } from "tamagui";
 
-export function MessagesHeader() {
+export function InboxHeader() {
   return (
     <YStack paddingHorizontal="$4">
       <Text fontSize="$8" fontWeight="bold" color="$color">
-        Messages
+        Chats
       </Text>
     </YStack>
   );

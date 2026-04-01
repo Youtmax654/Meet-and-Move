@@ -4,12 +4,12 @@ import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 
-interface ChatHeaderProps {
+interface ThreadHeaderProps {
   title: string;
   subtitle: string;
 }
 
-export function ChatHeader({ title, subtitle }: ChatHeaderProps) {
+export function ThreadHeader({ title, subtitle }: ThreadHeaderProps) {
   const router = useRouter();
 
   return (
@@ -18,7 +18,7 @@ export function ChatHeader({ title, subtitle }: ChatHeaderProps) {
         alignItems="center"
         justifyContent="space-between"
         paddingHorizontal="$4"
-        paddingVertical="$2"
+        paddingVertical="$4"
         backgroundColor="#FFFFFF"
         borderBottomWidth={1}
         borderBottomColor="#F1F1F0"

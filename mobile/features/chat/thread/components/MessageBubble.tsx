@@ -8,7 +8,7 @@ interface MessageBubbleProps {
   timestamp: string;
   isSelf: boolean;
   avatarUrl?: string;
-  status?: string; // "Distribué" etc.
+  status?: string; // "delivered", "read"
 }
 
 export function MessageBubble({
@@ -85,7 +85,10 @@ export function MessageBubble({
             </Text>
           )}
           <Text fontSize={10} color="#5B5C5B">
-            {timestamp}
+            {new Date(timestamp).toLocaleDateString("fr-FR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </Text>
         </XStack>
       </YStack>
