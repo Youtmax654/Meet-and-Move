@@ -10,6 +10,7 @@ export const upcomingActivities: UpcomingActivity[] = [
     date: "12 Oct",
     title: "Randonnée sur la Crête du Mont-Blanc",
     location: "Hôte : Elena K.",
+    isHostVerified: true,
     avatars: [
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80",
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
@@ -66,6 +67,7 @@ export const nearbyGuides: Guide[] = [
     details: "Expert en : Gastronomie, Histoire",
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
+    isVerified: true,
   },
   {
     id: "2",
@@ -73,5 +75,6 @@ export const nearbyGuides: Guide[] = [
     details: "Expert en : Vie nocturne, Musique",
     image:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+    isVerified: true,
   },
 ];

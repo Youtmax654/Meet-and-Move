@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Text, XStack, YStack } from 'tamagui';
 
@@ -59,6 +60,9 @@ export function UpcomingActivityCard({ activity }: UpcomingActivityCardProps) {
                         <Text fontSize={14} color="#5B5C5B" fontWeight="500">
                             {activity.location}
                         </Text>
+                        {activity.isHostVerified && (
+                            <Ionicons name="checkmark-circle" size={16} color="#006666" />
+                        )}
                     </XStack>
                 </YStack>
 

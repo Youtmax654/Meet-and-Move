@@ -3,6 +3,7 @@ export type UpcomingActivity = {
   date: string;
   title: string;
   location: string;
+  isHostVerified?: boolean;
   avatars: string[];
   extra: string;
   price: string;
@@ -21,4 +22,5 @@ export type Guide = {
   name: string;
   details: string;
   image: string;
+  isVerified?: boolean;
 };
