@@ -1,9 +1,11 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { Client } from "pg";
+
 import { dbContext } from "./db";
 import * as schema from "./db/schema";
-import chatsRoute from "./features/chats/chats.routes";
+import activitiesRoute from "./features/activities/activities.routes";
 
 type AppEnv = {
   Bindings: {
@@ -15,6 +17,8 @@ type AppEnv = {
 };
 
 const app = new Hono<AppEnv>();
+
+app.use("*", cors());
 
 app.use("*", async (c, next) => {
   const client = new Client({ connectionString: c.env.POSTGRES_URL });
@@ -40,6 +44,7 @@ app.get("/", (c) => {
   });
 });
 
-app.route("/chats", chatsRoute);
+app.route("/activities", activitiesRoute);
 
 export default app;
+
