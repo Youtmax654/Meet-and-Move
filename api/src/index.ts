@@ -47,4 +47,3 @@ app.get("/", (c) => {
 app.route("/activities", activitiesRoute);
 
 export default app;
-
