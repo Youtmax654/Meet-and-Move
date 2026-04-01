@@ -1,8 +1,9 @@
-import { db } from "../../db";
+import { getDb } from "../../db";
 import { activities, users, interests, activityParticipants } from "../../db/schema";
 import { eq, sql as drizzleSql, and } from "drizzle-orm";
 
 export const getActivityById = async (id: string) => {
+  const db = getDb();
   try {
     const result = await db
       .select({
@@ -65,3 +66,4 @@ export const getActivityById = async (id: string) => {
     throw error;
   }
 };
+

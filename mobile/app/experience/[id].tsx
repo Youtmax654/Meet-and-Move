@@ -27,18 +27,26 @@ export default function ExperienceDetailsScreen() {
       try {
         setLoading(true);
         const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-        const response = await fetch(`${apiUrl}/activities/${id}`);
+        const url = `${apiUrl}/activities/${id}`;
+        console.log(`Fetching activity from: ${url}`);
+        
+        const response = await fetch(url);
+        console.log("Response status:", response.status);
 
         if (response.status === 404) {
           throw new Error("Activité introuvable - 404");
         }
 
         if (!response.ok) {
-          throw new Error("Échec du chargement de l'activité");
+          const errorBody = await response.text();
+          console.error("Error response body:", errorBody);
+          throw new Error(`Échec du chargement (${response.status})`);
         }
         const data = await response.json();
+        console.log("Activity data loaded:", data.title);
         setActivity(data);
       } catch (err: any) {
+        console.error("Fetch error:", err);
         setError(err.message || "Une erreur est survenue");
       } finally {
         setLoading(false);
@@ -64,6 +72,7 @@ export default function ExperienceDetailsScreen() {
   }
 
   if (error || !activity) {
+    const is404 = error?.includes("404");
     return (
       <View
         flex={1}
@@ -72,7 +81,7 @@ export default function ExperienceDetailsScreen() {
         alignItems="center"
       >
         <Text fontSize={48} fontWeight="800" color="#006666" mb={16}>
-          404
+          {is404 ? "404" : "Oops"}
         </Text>
         <Text
           fontSize={18}
@@ -81,7 +90,7 @@ export default function ExperienceDetailsScreen() {
           mb={8}
           textAlign="center"
         >
-          Page non trouvée
+          {is404 ? "Page non trouvée" : "Erreur de chargement"}
         </Text>
         <Text
           fontSize={14}
