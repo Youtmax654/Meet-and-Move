@@ -6,9 +6,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "vars": {
-    "DATABASE_URL": "postgresql://meetandmove:meet&move@localhost:5432/meetandmove"
-  },
+  // "vars": {
+  //   "MY_VAR": "my-variable"
+  // },
   // "kv_namespaces": [
   //   {
   //     "binding": "MY_KV_NAMESPACE",

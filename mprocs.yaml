@@ -1,0 +1,16 @@
+procs:
+  Mobile:
+    cmd:
+      $select: os
+      windows: ["cmd", "/c", "npm run start:mobile"]
+      linux: ["npm", "run", "start:mobile"]
+  API:
+    cmd:
+      $select: os
+      windows: ["cmd", "/c", "npm run start:api"]
+      linux: ["npm", "run", "start:api"]
+  DB:
+    cmd:
+      $select: os
+      windows: ["cmd", "/c", "npm run db:start"]
+      linux: ["npm", "run", "db:start"]
