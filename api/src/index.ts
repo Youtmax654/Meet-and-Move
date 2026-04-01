@@ -6,10 +6,7 @@ import { Client } from "pg";
 import { dbContext } from "./db";
 import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
-<<<<<<< HEAD
 import chatsRoute from "./features/chats/chats.routes";
-=======
->>>>>>> 819437a (fix je sais pas comment)
 
 type AppEnv = {
   Bindings: {
@@ -52,4 +49,3 @@ app.route("/chats", chatsRoute);
 app.route("/activities", activitiesRoute);
 
 export default app;
-
