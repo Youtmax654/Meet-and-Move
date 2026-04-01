@@ -1,3 +1,9 @@
+export interface PriceBreakdownItem {
+  label: string;
+  amount: number;
+  color: string;
+}
+
 export interface Activity {
   id: string;
   title: string;
@@ -9,6 +15,10 @@ export interface Activity {
   longitude?: number;
   max_participants?: number;
   enrolledCount?: number;
+  participants?: Array<{
+    id: string;
+    username: string;
+  }>;
   host?: {
     id: string;
     username: string;
@@ -18,13 +28,6 @@ export interface Activity {
     id: string;
     name: string;
   };
-  participants?: {
-    id: string;
-    username: string;
-  }[];
-  price_breakdown?: {
-    label: string;
-    amount: number;
-    color: string;
-  }[];
+  price_breakdown?: PriceBreakdownItem[];
+  eventDate?: string;
 }

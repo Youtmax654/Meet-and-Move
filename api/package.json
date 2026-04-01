@@ -10,11 +10,8 @@
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.9",
-<<<<<<< HEAD
-    "postgres": "^3.4.8",
-=======
     "pg": "^8.20.0",
->>>>>>> main
+    "postgres": "^3.4.8",
     "zod": "^4.3.6"
   },
   "devDependencies": {
