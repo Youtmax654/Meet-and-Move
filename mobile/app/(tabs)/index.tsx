@@ -8,8 +8,6 @@ import { ThemedView } from '@/components/themed-view';
 import { Redirect, Link } from 'expo-router';
 
 export default function HomeScreen() {
-  return <Redirect href="/experience/123e4567-e89b-12d3-a456-426614174000" />;
-
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
