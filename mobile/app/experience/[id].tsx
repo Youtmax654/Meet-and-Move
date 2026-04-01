@@ -12,6 +12,7 @@ import { ExperienceHeader } from "../../components/experience-details/experience
 import { HeroSection } from "../../components/experience-details/hero-section";
 import { PriceBreakdown } from "../../components/experience-details/price-breakdown";
 import { SquadMembers } from "../../components/experience-details/squad-members";
+import { NotFoundError } from "../../components/ui/not-found-error";
 
 export default function ExperienceDetailsScreen() {
   const router = useRouter();
@@ -72,50 +73,13 @@ export default function ExperienceDetailsScreen() {
   }
 
   if (error || !activity) {
-    const is404 = error?.includes("404");
     return (
-      <View
-        flex={1}
-        backgroundColor="#F7F6F5"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Text fontSize={48} fontWeight="800" color="#006666" mb={16}>
-          {is404 ? "404" : "Oops"}
-        </Text>
-        <Text
-          fontSize={18}
-          fontWeight="600"
-          color="#2E2F2F"
-          mb={8}
-          textAlign="center"
-        >
-          {is404 ? "Page non trouvée" : "Erreur de chargement"}
-        </Text>
-        <Text
-          fontSize={14}
-          fontWeight="400"
-          color="#5B5C5B"
-          mb={32}
-          textAlign="center"
-          px={24}
-        >
-          {error ||
-            "L'activité que tu cherches n'existe pas ou a été supprimée."}
-        </Text>
-        <Pressable onPress={() => router.back()}>
-          <View
-            backgroundColor="#006666"
-            paddingHorizontal={32}
-            paddingVertical={12}
-            borderRadius={9999}
-          >
-            <Text color="#FFFFFF" fontWeight="700">
-              Retour
-            </Text>
-          </View>
-        </Pressable>
-      </View>
+      <NotFoundError 
+        title={error?.includes("404") ? "Activité introuvable" : "Erreur de chargement"}
+        message={error || "L'activité que tu cherches n'existe pas ou a été supprimée."}
+        buttonText="Retour"
+        onPress={() => router.back()}
+      />
     );
   }
 

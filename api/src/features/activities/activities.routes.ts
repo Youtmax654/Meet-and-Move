@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { getActivity } from './activities.controller';
 
-const activitiesRoute = new Hono<{ Bindings: { DATABASE_URL: string } }>();
+const activitiesRoute = new Hono();
 
 activitiesRoute.get('/:id', getActivity);
 
