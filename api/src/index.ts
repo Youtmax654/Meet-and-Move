@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { Client } from "pg";
 import { dbContext } from "./db";
 import * as schema from "./db/schema";
-import chatsRoute from "./features/chats/chats.routes";
 
 type AppEnv = {
   Bindings: {
@@ -39,7 +38,5 @@ app.get("/", (c) => {
     message: "Welcome to the Meet and Move API",
   });
 });
-
-app.route("/chats", chatsRoute);
 
 export default app;
