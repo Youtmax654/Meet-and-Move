@@ -9,7 +9,7 @@ CREATE TABLE users (
   email VARCHAR UNIQUE NOT NULL,
   age INTEGER,
   gender VARCHAR, -- 'M', 'F', 'NB', 'other', 'prefer_not_to_say'
-  role VARCHAR, -- 'user', 'pro_guide', 'admin'
+  role VARCHAR, -- 'user', 'admin'
   bio TEXT,
   is_verified BOOLEAN DEFAULT false,
   meetcoins_balance INTEGER DEFAULT 0,
