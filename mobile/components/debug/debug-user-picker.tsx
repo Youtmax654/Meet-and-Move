@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Platform } from "react-native";
+import { Modal, Platform, Pressable, ScrollView, StyleSheet } from "react-native";
 import { Button, Text, View, XStack, YStack } from "tamagui";
 import { api } from "../../lib/api";
-import * as SecureStore from 'expo-secure-store';
+
 
 export function DebugUserPicker() {
   const [activeUser, setActiveUser] = useState<any | null>(null);
@@ -29,7 +30,7 @@ export function DebugUserPicker() {
             if (u) setActiveUser(u);
           }
         }
-      } catch (err) {}
+      } catch (err) { }
     };
     restoreUser();
   }, [users]);

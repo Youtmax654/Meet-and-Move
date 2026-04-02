@@ -1,8 +1,12 @@
-import { Context } from 'hono';
-import { getActivityById, joinActivity } from './activities.service';
+import { Context } from "hono";
+import {
+  getActivityById,
+  getUserJoinedActivities,
+  joinActivity,
+} from "./activities.service";
 
 export const getActivity = async (c: Context) => {
-  const id = c.req.param('id');
+  const id = c.req.param("id");
   if (!id) {
     return c.json({ error: "Missing ID" }, 400);
   }
@@ -22,8 +26,8 @@ export const getActivity = async (c: Context) => {
 };
 
 export const handleJoinActivity = async (c: Context) => {
-  const activityId = c.req.param('id');
-  const userId = c.get('userId');
+  const activityId = c.req.param("id");
+  const userId = c.get("userId");
 
   if (!activityId || !userId) {
     return c.json({ error: "Missing activityId or userId" }, 400);
@@ -37,6 +41,22 @@ export const handleJoinActivity = async (c: Context) => {
       return c.json({ error: "Tu as déjà rejoint cette activité !" }, 409);
     }
     console.error("Error joining activity:", error);
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+};
+
+export const handleGetJoinedActivities = async (c: Context) => {
+  const userId = c.get("userId");
+
+  if (!userId) {
+    return c.json({ error: "Missing userId" }, 400);
+  }
+
+  try {
+    const activities = await getUserJoinedActivities(userId);
+    return c.json(activities);
+  } catch (error) {
+    console.error("Error fetching user joined activities:", error);
     return c.json({ error: "Internal Server Error" }, 500);
   }
 };

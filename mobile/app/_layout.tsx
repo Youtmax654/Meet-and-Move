@@ -4,13 +4,13 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { TamaguiProvider } from "tamagui";
-import { config } from "../tamagui.config";
 import { DebugUserPicker } from "../components/debug/debug-user-picker";
 import { ToastProvider } from "../context/toast-context";
+import { config } from "../tamagui.config";
 
 export const unstable_settings = {
   anchor: "(tabs)",

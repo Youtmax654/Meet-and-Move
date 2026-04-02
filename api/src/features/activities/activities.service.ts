@@ -1,6 +1,11 @@
+import { and, eq } from "drizzle-orm";
 import { getDb } from "../../db";
-import { activities, users, interests, activityParticipants } from "../../db/schema";
-import { eq, sql as drizzleSql, and } from "drizzle-orm";
+import {
+  activities,
+  activityParticipants,
+  interests,
+  users,
+} from "../../db/schema";
 
 export const getActivityById = async (id: string) => {
   const db = getDb();
@@ -40,8 +45,8 @@ export const getActivityById = async (id: string) => {
       .where(
         and(
           eq(activityParticipants.activityId, id),
-          eq(activityParticipants.status, "accepted")
-        )
+          eq(activityParticipants.status, "accepted"),
+        ),
       );
 
     return {
@@ -67,7 +72,10 @@ export const getActivityById = async (id: string) => {
   }
 };
 
-export const joinActivity = async (activityId: string, userId: string): Promise<{ success: boolean }> => {
+export const joinActivity = async (
+  activityId: string,
+  userId: string,
+): Promise<{ success: boolean }> => {
   const db = getDb();
 
   const existing = await db
@@ -76,8 +84,8 @@ export const joinActivity = async (activityId: string, userId: string): Promise<
     .where(
       and(
         eq(activityParticipants.activityId, activityId),
-        eq(activityParticipants.userId, userId)
-      )
+        eq(activityParticipants.userId, userId),
+      ),
     )
     .limit(1);
 
@@ -95,3 +103,67 @@ export const joinActivity = async (activityId: string, userId: string): Promise<
   return { success: true };
 };
 
+export const getUserJoinedActivities = async (userId: string) => {
+  const db = getDb();
+  try {
+    const result = await db
+      .select({
+        activity: activities,
+        host: {
+          id: users.id,
+          username: users.username,
+        },
+        category: {
+          id: interests.id,
+          name: interests.name,
+        },
+      })
+      .from(activityParticipants)
+      .innerJoin(activities, eq(activityParticipants.activityId, activities.id))
+      .innerJoin(users, eq(activities.hostId, users.id))
+      .leftJoin(interests, eq(activities.categoryId, interests.id))
+      .where(
+        and(
+          eq(activityParticipants.userId, userId),
+          eq(activityParticipants.status, "accepted"),
+        ),
+      );
+
+    return await Promise.all(
+      result.map(async (row) => {
+        const details = (row.activity.specificDetails as any) || {};
+
+        const participantsList = await db
+          .select({ id: activityParticipants.userId })
+          .from(activityParticipants)
+          .where(
+            and(
+              eq(activityParticipants.activityId, row.activity.id),
+              eq(activityParticipants.status, "accepted"),
+            ),
+          );
+
+        return {
+          id: row.activity.id,
+          title: row.activity.title,
+          description: row.activity.description,
+          price: details.price,
+          latitude: row.activity.latitude,
+          longitude: row.activity.longitude,
+          max_participants: row.activity.maxParticipants,
+          enrolledCount: participantsList.length,
+          host: row.host,
+          category: row.category,
+          eventDate: row.activity.eventDate,
+          coverImage:
+            details.coverImage ||
+            "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=1200&q=80",
+          locationCity: details.locationCity || "Localité",
+        };
+      }),
+    );
+  } catch (error) {
+    console.error("Error fetching user joined activities:", error);
+    throw error;
+  }
+};
