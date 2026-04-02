@@ -32,7 +32,7 @@ export function HomeScreen() {
                         marginBottom="$4"
                         maxWidth={340}
                     >
-                        Trouvez votre prochain voyage
+                        Trouvez votre prochaine activité
                     </Text>
 
                     <HomeSearchBar />
