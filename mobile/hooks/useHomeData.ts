@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-
-import { fetchActivities, fetchGuides, fetchTopRated } from '@/components/home/data/api';
+import { api } from '@/lib/api';
 import {
   nearbyGuides as fallbackGuides,
   upcomingActivities as fallbackActivities,
@@ -31,38 +30,29 @@ export function useHomeData(): HomeData {
         setLoading(true);
         setError(null);
 
-        const [activitiesData, topRatedData, guidesData] = await Promise.all([
-          fetchActivities(),
-          fetchTopRated(),
-          fetchGuides(),
-        ]);
-
+        // Fetch activities from real API
+        // For topRated and guides, we keep fallbacks for now as they aren't implemented in back yet
+        const response = await api.get('/feed');
+        
         if (!isMounted) return;
 
-        if (activitiesData.length > 0) {
-          setActivities(activitiesData);
+        if (response.data && response.data.length > 0) {
+          setActivities(response.data);
         } else {
-          setActivities(fallbackActivities);
+          setActivities([]); // Empty state handled in UI
         }
 
-        if (topRatedData.length > 0) {
-          setTopRated(topRatedData);
-        } else {
-          setTopRated(fallbackTopRated);
-        }
+        // Mocking others for now
+        setTopRated(fallbackTopRated);
+        setGuides(fallbackGuides);
 
-        if (guidesData.length > 0) {
-          setGuides(guidesData);
-        } else {
-          setGuides(fallbackGuides);
-        }
       } catch (err) {
         if (!isMounted) return;
         const message = err instanceof Error ? err.message : 'Erreur inconnue';
         setError(message);
-        console.warn('useHomeData: fallback sur données locales -', message);
+        console.warn('useHomeData error:', message);
         
-        // Initialiser avec fallback local si échec de l'API
+        // Final fallback to mock if API fails completely
         setActivities(fallbackActivities);
         setTopRated(fallbackTopRated);
         setGuides(fallbackGuides);

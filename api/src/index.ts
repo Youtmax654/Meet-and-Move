@@ -6,6 +6,7 @@ import { Client } from "pg";
 import { dbContext } from "./db";
 import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
+import feedRoute from "./features/feed/feed.route";
 import authRoute from "./features/auth/auth.routes";
 import { authMiddleware } from "./middleware/auth";
 
@@ -48,6 +49,7 @@ app.get("/", (c) => {
 });
 
 app.route("/activities", activitiesRoute);
+app.route("/feed", feedRoute);
 app.route("/auth", authRoute);
 
 export default app;

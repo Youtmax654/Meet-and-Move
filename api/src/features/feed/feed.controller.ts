@@ -3,14 +3,8 @@ import { getAllActivities as fetchAllActivities, getGuides as fetchGuides } from
 import { mapActivityToCard } from './activities.mapper';
 
 export const getAllActivities = async (c: Context) => {
-  const databaseUrl = c.env?.DATABASE_URL as string;
-
-  if (!databaseUrl) {
-    return c.json({ error: "Database URL not configured in environment" }, 500);
-  }
-
   try {
-    const activities = await fetchAllActivities(databaseUrl);
+    const activities = await fetchAllActivities();
 
     if (!activities || activities.length === 0) {
       return c.json([], 200);
@@ -25,15 +19,9 @@ export const getAllActivities = async (c: Context) => {
 };
 
 export const getGuides = async (c: Context) => {
-  const databaseUrl = c.env?.DATABASE_URL as string;
-
-  if (!databaseUrl) {
-    return c.json({ error: "Database URL not configured in environment" }, 500);
-  }
-
   try {
-    const guides = await fetchGuides(databaseUrl);
-    return c.json(guides);
+    const guides = await fetchGuides();
+    return c.json(guides || []);
   } catch (error) {
     console.error("Error fetching guides:", error);
     return c.json({ error: "Internal Server Error" }, 500);

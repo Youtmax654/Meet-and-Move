@@ -44,6 +44,11 @@ export function HomeScreen() {
                                 Chargement des données...
                             </Text>
                         </YStack>
+                    ) : activities.length === 0 ? (
+                        <YStack alignItems="center" justifyContent="center" paddingVertical={60} gap={12}>
+                            <Text fontSize={18} color="#1E2228" fontWeight="600">Aucune activité disponible</Text>
+                            <Text fontSize={14} color="#5B5C5B" textAlign="center">Revenez plus tard pour découvrir de nouvelles expériences !</Text>
+                        </YStack>
                     ) : (
                         <>
                             <UpcomingActivitiesSection activities={activities} />

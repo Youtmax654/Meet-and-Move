@@ -7,7 +7,7 @@ export function HeroSection({ activity }: { activity?: Activity }) {
   return (
     <View position="relative" height={268.5} width="100%" borderRadius={12} overflow="hidden" backgroundColor="#E2E2E1">
       <Image
-        source={{ uri: `https://picsum.photos/800/600?random=${activity?.id || "nature"}` }}
+        source={{ uri: activity?.image || `https://loremflickr.com/800/600/nature?lock=1` }}
         style={{ width: "100%", height: "100%" }}
         contentFit="cover"
       />

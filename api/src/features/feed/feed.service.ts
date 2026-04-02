@@ -1,129 +1,108 @@
-import postgres from "postgres";
+import { getDb } from "../../db";
+import { activities, users, interests, activityParticipants, userInterests } from "../../db/schema";
+import { eq, sql as drizzleSql, and } from "drizzle-orm";
 
-export const getAllActivities = async (databaseUrl: string) => {
-  const sql = postgres(databaseUrl);
-
+export const getAllActivities = async () => {
+  const db = getDb();
+  
   try {
-    const activities = await sql`
-      SELECT 
-        a.id, 
-        a.title, 
-        a.description, 
-        a.latitude, 
-        a.longitude, 
-        a.max_participants, 
-        a.specific_details,
-        a.event_date,
+    const result = await db
+      .select({
+        activity: activities,
+        host: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          isVerified: users.isVerified,
+        },
+        category: {
+          id: interests.id,
+          name: interests.name,
+        },
+      })
+      .from(activities)
+      .innerJoin(users, eq(activities.hostId, users.id))
+      .leftJoin(interests, eq(activities.categoryId, interests.id))
+      .orderBy(activities.createdAt);
 
-        u.id as host_id, 
-        u.username as host_username, 
-        u.bio as host_bio,
-        u.is_verified as host_is_verified,
+    if (result.length === 0) return [];
 
-        i.id as category_id, 
-        i.name as category_name
-
-      FROM activities a
-      JOIN users u ON a.host_id = u.id
-      LEFT JOIN interests i ON a.category_id = i.id
-    `;
-
-    if (activities.length === 0) return [];
-
-    const participants = await sql`
-      SELECT ap.activity_id, u.id, u.username
-      FROM activity_participants ap
-      JOIN users u ON ap.user_id = u.id
-      WHERE ap.status = 'accepted'
-    `;
+    // Fetch all accepted participants for these activities to build avatars
+    const allParticipants = await db
+      .select({
+        activityId: activityParticipants.activityId,
+        userId: users.id,
+        username: users.username,
+      })
+      .from(activityParticipants)
+      .innerJoin(users, eq(activityParticipants.userId, users.id))
+      .where(eq(activityParticipants.status, "accepted"));
 
     const participantsByActivity: Record<string, { id: string; username: string }[]> = {};
-
-    for (const p of participants) {
-      if (!participantsByActivity[p.activity_id]) {
-        participantsByActivity[p.activity_id] = [];
+    allParticipants.forEach(p => {
+      if (!participantsByActivity[p.activityId]) {
+        participantsByActivity[p.activityId] = [];
       }
-      participantsByActivity[p.activity_id].push({
-        id: p.id,
-        username: p.username,
-      });
-    }
+      participantsByActivity[p.activityId].push({ id: p.userId, username: p.username });
+    });
 
-    return activities.map((row) => {
-      const details = row.specific_details || {};
-      const activityParticipants = participantsByActivity[row.id] || [];
+    return result.map((row) => {
+      const details = (row.activity.specificDetails as any) || {};
+      const participants = participantsByActivity[row.activity.id] || [];
 
       return {
-        id: row.id,
-        title: row.title,
-        description: row.description,
-
-        // ✅ NOUVEAU
-        event_date: row.event_date,
-        isHostVerified: row.host_is_verified,
-
+        id: row.activity.id,
+        title: row.activity.title,
+        description: row.activity.description,
+        event_date: row.activity.eventDate,
+        isHostVerified: row.host.isVerified,
         price: details.price,
         difficulty: details.difficulty,
         duration_hours: details.duration_hours,
-
-        latitude: row.latitude,
-        longitude: row.longitude,
-
-        max_participants: row.max_participants,
-
-        enrolledCount: activityParticipants.length,
-        participants: activityParticipants,
-
-        host: {
-          id: row.host_id,
-          username: row.host_username,
-          bio: row.host_bio,
-        },
-
-        category: {
-          id: row.category_id,
-          name: row.category_name,
-        },
-
+        latitude: row.activity.latitude,
+        longitude: row.activity.longitude,
+        max_participants: row.activity.maxParticipants,
+        enrolledCount: participants.length,
+        participants: participants,
+        host: row.host,
+        category: row.category,
+        image: details.image,
         price_breakdown: details.price_breakdown || [],
       };
     });
-
-  } finally {
-    await sql.end();
+  } catch (error) {
+    console.error("Drizzle Feed Activities Error:", error);
+    throw error;
   }
 };
 
-export const getGuides = async (databaseUrl: string) => {
-  const sql = postgres(databaseUrl);
-
+export const getGuides = async () => {
+  const db = getDb();
+  
   try {
-    const guides = await sql`
-      SELECT 
-        u.id, 
-        u.username, 
-        u.bio,
-        u.is_verified,
-        COALESCE(
-          string_agg(i.name, ', '),
-          ''
-        ) as interests
-      FROM users u
-      LEFT JOIN user_interests ui ON u.id = ui.user_id
-      LEFT JOIN interests i ON ui.interest_id = i.id
-      WHERE u.role = 'pro_guide'
-      GROUP BY u.id, u.username, u.bio, u.is_verified
-    `;
+    const result = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        bio: users.bio,
+        isVerified: users.isVerified,
+        interests: drizzleSql<string>`string_agg(${interests.name}, ', ')`,
+      })
+      .from(users)
+      .leftJoin(userInterests, eq(users.id, userInterests.userId))
+      .leftJoin(interests, eq(userInterests.interestId, interests.id))
+      .where(eq(users.role, "pro_guide"))
+      .groupBy(users.id, users.username, users.bio, users.isVerified);
 
-    return guides.map((g) => ({
+    return result.map((g) => ({
       id: g.id,
       name: g.username,
       details: g.interests ? `Expert en : ${g.interests}` : g.bio || '',
-      image: `https://api.dicebear.com/7.x/initials/png?seed=${encodeURIComponent(g.username)}`,
-      isVerified: g.is_verified,
+      image: `https://i.pravatar.cc/150?u=${g.id}`,
+      isVerified: g.isVerified,
     }));
-
-  } finally {
-    await sql.end();
+  } catch (error) {
+    console.error("Drizzle Feed Guides Error:", error);
+    throw error;
   }
 };
