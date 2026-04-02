@@ -8,6 +8,7 @@ export interface Activity {
   id: string;
   title: string;
   description: string;
+  image?: string;
   price?: number;
   difficulty?: string;
   duration_hours?: number;
@@ -18,11 +19,13 @@ export interface Activity {
   participants?: Array<{
     id: string;
     username: string;
+    avatar?: string;
   }>;
   host?: {
     id: string;
     username: string;
     bio?: string;
+    avatar?: string;
   };
   category?: {
     id: string;

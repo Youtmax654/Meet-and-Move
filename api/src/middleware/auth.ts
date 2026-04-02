@@ -17,8 +17,6 @@ export const authMiddleware = async (c: Context, next: Next) => {
     );
   }
 
-  console.debug("Auth Middleware - User ID:", userId);
-
   c.set("userId", userId);
   await next();
 };

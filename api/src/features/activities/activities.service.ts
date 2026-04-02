@@ -6,6 +6,7 @@ import {
   interests,
   users,
 } from "../../db/schema";
+import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
 
 export const getActivityById = async (id: string) => {
   const db = getDb();
@@ -35,7 +36,7 @@ export const getActivityById = async (id: string) => {
     const details = (row.activity.specificDetails as any) || {};
 
     // Récupérer la liste des participants acceptés
-    const participantsList = await db
+    const participantsListFiltered = await db
       .select({
         id: users.id,
         username: users.username,
@@ -49,19 +50,31 @@ export const getActivityById = async (id: string) => {
         ),
       );
 
+    // Formater les participants avec leurs avatars pravatar
+    const participantsWithAvatars = participantsListFiltered.map((p) => ({
+      ...p,
+      avatar: getAvatarUrl(p.id),
+    }));
+
     return {
       id: row.activity.id,
       title: row.activity.title,
       description: row.activity.description,
+      image:
+        details.image ||
+        getActivityImageUrl(row.category?.name || undefined, row.activity.id),
       price: details.price,
       difficulty: details.difficulty,
       duration_hours: details.duration_hours,
       latitude: row.activity.latitude,
       longitude: row.activity.longitude,
       max_participants: row.activity.maxParticipants,
-      enrolledCount: participantsList.length,
-      participants: participantsList,
-      host: row.host,
+      enrolledCount: participantsWithAvatars.length,
+      participants: participantsWithAvatars,
+      host: {
+        ...row.host,
+        avatar: getAvatarUrl(row.host.id),
+      },
       category: row.category,
       price_breakdown: details.price_breakdown || [],
       eventDate: row.activity.eventDate,

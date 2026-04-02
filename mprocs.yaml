@@ -9,8 +9,13 @@ procs:
       $select: os
       windows: ["cmd", "/c", "npm run start:api"]
       linux: ["npm", "run", "start:api"]
-  DB:
+  PostgreSQL:
     cmd:
       $select: os
-      windows: ["cmd", "/c", "npm run db:start"]
-      linux: ["npm", "run", "db:start"]
+      windows: ["cmd", "/c", "cd db && docker compose up db"]
+      linux: ["sh", "-c", "cd db && docker compose up db"]
+  Redis:
+    cmd:
+      $select: os
+      windows: ["cmd", "/c", "cd db && docker compose up redis"]
+      linux: ["sh", "-c", "cd db && docker compose up redis"]
