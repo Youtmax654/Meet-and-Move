@@ -1,7 +1,12 @@
+import { and, eq } from "drizzle-orm";
 import { getDb } from "../../db";
-import { activities, users, interests, activityParticipants } from "../../db/schema";
-import { eq, sql as drizzleSql, and } from "drizzle-orm";
-import { getAvatarUrl, getActivityImageUrl } from "../../utils/image";
+import {
+  activities,
+  activityParticipants,
+  interests,
+  users,
+} from "../../db/schema";
+import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
 
 export const getActivityById = async (id: string) => {
   const db = getDb();
@@ -41,21 +46,23 @@ export const getActivityById = async (id: string) => {
       .where(
         and(
           eq(activityParticipants.activityId, id),
-          eq(activityParticipants.status, "accepted")
-        )
+          eq(activityParticipants.status, "accepted"),
+        ),
       );
 
     // Formater les participants avec leurs avatars pravatar
-    const participantsWithAvatars = participantsListFiltered.map(p => ({
+    const participantsWithAvatars = participantsListFiltered.map((p) => ({
       ...p,
-      avatar: getAvatarUrl(p.id)
+      avatar: getAvatarUrl(p.id),
     }));
 
     return {
       id: row.activity.id,
       title: row.activity.title,
       description: row.activity.description,
-      image: details.image || getActivityImageUrl(row.category?.name || undefined, row.activity.id),
+      image:
+        details.image ||
+        getActivityImageUrl(row.category?.name || undefined, row.activity.id),
       price: details.price,
       difficulty: details.difficulty,
       duration_hours: details.duration_hours,
@@ -66,7 +73,7 @@ export const getActivityById = async (id: string) => {
       participants: participantsWithAvatars,
       host: {
         ...row.host,
-        avatar: getAvatarUrl(row.host.id)
+        avatar: getAvatarUrl(row.host.id),
       },
       category: row.category,
       price_breakdown: details.price_breakdown || [],
@@ -78,7 +85,10 @@ export const getActivityById = async (id: string) => {
   }
 };
 
-export const joinActivity = async (activityId: string, userId: string): Promise<{ success: boolean }> => {
+export const joinActivity = async (
+  activityId: string,
+  userId: string,
+): Promise<{ success: boolean }> => {
   const db = getDb();
 
   const existing = await db
@@ -87,8 +97,8 @@ export const joinActivity = async (activityId: string, userId: string): Promise<
     .where(
       and(
         eq(activityParticipants.activityId, activityId),
-        eq(activityParticipants.userId, userId)
-      )
+        eq(activityParticipants.userId, userId),
+      ),
     )
     .limit(1);
 
@@ -105,4 +115,3 @@ export const joinActivity = async (activityId: string, userId: string): Promise<
 
   return { success: true };
 };
-

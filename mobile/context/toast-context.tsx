@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { AnimatePresence, YStack, Text } from 'tamagui';
+import React, { createContext, useCallback, useContext, useState } from "react";
+import { AnimatePresence, Text, YStack } from "tamagui";
 
-type ToastType = 'success' | 'error' | 'info';
+type ToastType = "success" | "error" | "info";
 
 interface ToastContextType {
   showToast: (message: string, type?: ToastType) => void;
@@ -10,9 +10,12 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: ToastType;
+  } | null>(null);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info') => {
+  const showToast = useCallback((message: string, type: ToastType = "info") => {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
@@ -30,7 +33,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             top={100}
             left={20}
             right={20}
-            backgroundColor={toast.type === 'success' ? '#006666' : toast.type === 'error' ? '#EF4444' : '#3B82F6'}
+            backgroundColor={
+              toast.type === "success"
+                ? "#006666"
+                : toast.type === "error"
+                  ? "#EF4444"
+                  : "#3B82F6"
+            }
             padding="$3"
             borderRadius="$4"
             elevation={10}
@@ -49,6 +58,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 export function useToast() {
   const context = useContext(ToastContext);
-  if (!context) throw new Error('useToast must be used within ToastProvider');
+  if (!context) throw new Error("useToast must be used within ToastProvider");
   return context;
 }

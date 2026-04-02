@@ -13,7 +13,9 @@ export const authMiddleware = async (c: Context, next: Next) => {
   if (!userId) {
     return c.json({ error: "Non autorisé, veuillez vous connecter (Debug User Picker)." }, 401);
   }
-  
+
+  console.debug(`Authentification réussie pour l'utilisateur avec ID: ${userId}`);
+
   c.set('userId', userId);
   await next();
 };

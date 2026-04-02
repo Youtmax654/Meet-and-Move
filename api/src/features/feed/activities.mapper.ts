@@ -1,10 +1,12 @@
-import { getAvatarUrl, getActivityImageUrl } from "../../utils/image";
+import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
 
 export function mapActivityToCard(activity: any) {
   return {
     id: activity.id,
 
-    image: activity.image || getActivityImageUrl(activity.category?.name, activity.id),
+    image:
+      activity.image ||
+      getActivityImageUrl(activity.category?.name, activity.id),
 
     date: formatDate(activity.event_date),
 
@@ -18,7 +20,7 @@ export function mapActivityToCard(activity: any) {
       ?.slice(0, 4)
       .map((p: any) => getAvatarUrl(p.id)),
 
-    extra: Math.max(0, (activity.participants?.length || 0) - 4),
+    extra: Math.max(0, (activity.participants?.length || 0) - 4).toString(),
 
     price: activity.price ? `${activity.price}€` : "N/A",
   };
@@ -28,13 +30,13 @@ export function mapActivityToCard(activity: any) {
 
 function formatDate(date: string | Date | null) {
   if (!date) return "Date à venir";
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
+  return new Date(date).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
   });
 }
 
 function formatLocation(lat: number | string, lng: number | string) {
   // Optionnel: on pourrait utiliser un reverse geocoding plus tard
-  return `Lyon, FR`; 
+  return `Lyon, FR`;
 }

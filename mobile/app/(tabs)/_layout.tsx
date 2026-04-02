@@ -1,6 +1,6 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { TabBar } from '@/components/ui/TabBar';
+import { TabBar } from "@/components/ui/TabBar";
+import { Tabs } from "expo-router";
+import React from "react";
 
 export default function TabLayout() {
   return (
@@ -13,25 +13,25 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Explorer',
+          title: "Explorer",
         }}
       />
       <Tabs.Screen
         name="activities"
         options={{
-          title: 'activities',
+          title: "activities",
         }}
       />
       <Tabs.Screen
-        name="messages"
+        name="chats"
         options={{
-          title: 'Messages',
+          title: "Messages",
         }}
       />
       <Tabs.Screen
         name="profil"
         options={{
-          title: 'Profil',
+          title: "Profil",
         }}
       />
     </Tabs>

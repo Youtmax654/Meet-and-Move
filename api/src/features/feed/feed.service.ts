@@ -1,10 +1,16 @@
+import { sql as drizzleSql, eq } from "drizzle-orm";
 import { getDb } from "../../db";
-import { activities, users, interests, activityParticipants, userInterests } from "../../db/schema";
-import { eq, sql as drizzleSql, and } from "drizzle-orm";
+import {
+  activities,
+  activityParticipants,
+  interests,
+  userInterests,
+  users,
+} from "../../db/schema";
 
 export const getAllActivities = async () => {
   const db = getDb();
-  
+
   try {
     const result = await db
       .select({
@@ -38,12 +44,18 @@ export const getAllActivities = async () => {
       .innerJoin(users, eq(activityParticipants.userId, users.id))
       .where(eq(activityParticipants.status, "accepted"));
 
-    const participantsByActivity: Record<string, { id: string; username: string }[]> = {};
-    allParticipants.forEach(p => {
+    const participantsByActivity: Record<
+      string,
+      { id: string; username: string }[]
+    > = {};
+    allParticipants.forEach((p) => {
       if (!participantsByActivity[p.activityId]) {
         participantsByActivity[p.activityId] = [];
       }
-      participantsByActivity[p.activityId].push({ id: p.userId, username: p.username });
+      participantsByActivity[p.activityId].push({
+        id: p.userId,
+        username: p.username,
+      });
     });
 
     return result.map((row) => {
@@ -78,7 +90,7 @@ export const getAllActivities = async () => {
 
 export const getGuides = async () => {
   const db = getDb();
-  
+
   try {
     const result = await db
       .select({
@@ -97,7 +109,7 @@ export const getGuides = async () => {
     return result.map((g) => ({
       id: g.id,
       name: g.username,
-      details: g.interests ? `Expert en : ${g.interests}` : g.bio || '',
+      details: g.interests ? `Expert en : ${g.interests}` : g.bio || "",
       image: `https://i.pravatar.cc/150?u=${g.id}`,
       isVerified: g.isVerified,
     }));

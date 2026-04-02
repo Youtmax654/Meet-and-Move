@@ -1,10 +1,10 @@
+import { api } from "@/lib/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Button, Spinner, Text, View, XStack } from "tamagui";
 import { useToast } from "../../context/toast-context";
 import { Activity } from "../../types/activity";
-import { api } from "../../lib/api";
 
 export function ActionBar({ activity }: { activity?: Activity }) {
   const router = useRouter();
@@ -17,7 +17,10 @@ export function ActionBar({ activity }: { activity?: Activity }) {
     try {
       setLoading(true);
       const response = await api.post(`/activities/${activity.id}/join`);
-      showToast(`Bravo ! Tu as rejoint l'activité "${activity.title}"`, "success");
+      showToast(
+        `Bravo ! Tu as rejoint l'activité "${activity.title}"`,
+        "success",
+      );
 
       setTimeout(() => {
         router.replace("/(tabs)");
@@ -25,9 +28,17 @@ export function ActionBar({ activity }: { activity?: Activity }) {
     } catch (error: any) {
       console.error("Join error:", error);
       if (error.response?.status === 401) {
-        showToast("Sélectionne d'abord un utilisateur dans le menu de debug (icône bug) !", "error");
+        showToast(
+          "Sélectionne d'abord un utilisateur dans le menu de debug (icône bug) !",
+          "error",
+        );
       } else {
-        showToast(error.response?.data?.error || error.message || "Une erreur est survenue", "error");
+        showToast(
+          error.response?.data?.error ||
+            error.message ||
+            "Une erreur est survenue",
+          "error",
+        );
       }
     } finally {
       setLoading(false);
@@ -64,7 +75,7 @@ export function ActionBar({ activity }: { activity?: Activity }) {
             <Spinner color="white" />
           ) : (
             <Text color="#FFFFFF" fontWeight="700" fontSize={16}>
-              Rejoindre l'Équipe
+              Rejoindre l&apos;Équipe
             </Text>
           )}
         </Button>

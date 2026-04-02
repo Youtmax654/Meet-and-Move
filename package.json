@@ -17,15 +17,12 @@
     "start:api": "cd api && npm run dev",
     "db:start": "cd db && docker compose up",
     "db:stop": "cd db && docker compose down",
-    "db:reset": "cd db && docker compose down -v && docker compose up",
+    "db:prune": "cd db && docker compose down -v",
     "start": "mprocs",
     "install": "concurrently \"cd mobile && npm install\" \"cd api && npm install\" --names \"mobile\",\"api\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "mprocs": "^0.9.2"
-  },
-  "dependencies": {
-    "docker": "^1.0.0"
   }
 }
