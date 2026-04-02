@@ -32,3 +32,8 @@ export const chatMessageJoinSchema = z.object({
 });
 
 export const chatMessagesJoinSchema = z.array(chatMessageJoinSchema);
+
+export const sendMessageBodySchema = z.object({
+  senderId: z.uuid(),
+  content: z.string().min(1),
+});

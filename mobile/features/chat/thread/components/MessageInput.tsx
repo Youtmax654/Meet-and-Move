@@ -3,8 +3,20 @@ import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Input, XStack } from "tamagui";
 
-export function MessageInput() {
+interface MessageInputProps {
+  onSend?: (content: string) => void;
+}
+
+export function MessageInput({ onSend }: MessageInputProps) {
   const [text, setText] = useState("");
+
+  const handleSend = () => {
+    const trimmed = text.trim();
+    if (trimmed.length === 0) return;
+
+    onSend?.(trimmed);
+    setText("");
+  };
 
   return (
     <SafeAreaView edges={["bottom"]} style={{ backgroundColor: "#F7F6F5" }}>
@@ -49,6 +61,8 @@ export function MessageInput() {
             focusStyle={{ outlineWidth: 0 }}
             value={text}
             onChangeText={setText}
+            onSubmitEditing={handleSend}
+            returnKeyType="send"
           />
           <Button
             circular
@@ -69,6 +83,7 @@ export function MessageInput() {
               color="#FFFFFF"
             />
           }
+          onPress={handleSend}
         />
       </XStack>
     </SafeAreaView>

@@ -25,6 +25,15 @@ const chatsService = {
 
     return parsedResult;
   },
+
+  createMessage: async (chatId: string, senderId: string, content: string) => {
+    const [message] = await getDb()
+      .insert(schema.messages)
+      .values({ chatId, senderId, content })
+      .returning();
+
+    return message;
+  },
 };
 
 export default chatsService;
