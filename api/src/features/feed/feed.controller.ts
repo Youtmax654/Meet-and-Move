@@ -1,29 +1,41 @@
 import { Context } from 'hono';
-import { getAllActivitiesById } from './feed.service';
+import { getAllActivities as fetchAllActivities, getGuides as fetchGuides } from './feed.service';
+import { mapActivityToCard } from './activities.mapper';
 
 export const getAllActivities = async (c: Context) => {
-  const id = c.req.param('id');
-  // Access environment variable DATABASE_URL from Hono context
   const databaseUrl = c.env?.DATABASE_URL as string;
 
   if (!databaseUrl) {
     return c.json({ error: "Database URL not configured in environment" }, 500);
   }
 
-  if (!id) {
-    return c.json({ error: "Missing ID" }, 400);
+  try {
+    const activities = await fetchAllActivities(databaseUrl);
+
+    if (!activities || activities.length === 0) {
+      return c.json([], 200);
+    }
+
+    const mapped = activities.map(mapActivityToCard);
+    return c.json(mapped);
+  } catch (error: any) {
+    console.error("Error fetching activities:", error);
+    return c.json({ error: error.message || String(error) }, 500);
+  }
+};
+
+export const getGuides = async (c: Context) => {
+  const databaseUrl = c.env?.DATABASE_URL as string;
+
+  if (!databaseUrl) {
+    return c.json({ error: "Database URL not configured in environment" }, 500);
   }
 
   try {
-    const activity = await getAllActivitiesById(id, databaseUrl);
-
-    if (!activity) {
-      return c.json({ error: "Activity not found" }, 404);
-    }
-
-    return c.json(activity);
+    const guides = await fetchGuides(databaseUrl);
+    return c.json(guides);
   } catch (error) {
-    console.error("Error fetching activity:", error);
+    console.error("Error fetching guides:", error);
     return c.json({ error: "Internal Server Error" }, 500);
   }
 };
