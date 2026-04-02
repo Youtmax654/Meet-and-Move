@@ -7,6 +7,7 @@ import { dbContext } from "./db";
 import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
 import authRoute from "./features/auth/auth.routes";
+import { authMiddleware } from "./middleware/auth";
 
 type AppEnv = {
   Bindings: {
@@ -20,6 +21,7 @@ type AppEnv = {
 const app = new Hono<AppEnv>();
 
 app.use("*", cors());
+app.use("*", authMiddleware);
 
 app.use("*", async (c, next) => {
   const client = new Client({ connectionString: c.env.POSTGRES_URL });

@@ -6,6 +6,4 @@ const activitiesRoute = new Hono();
 activitiesRoute.get('/:id', getActivity);
 activitiesRoute.post('/:id/join', handleJoinActivity);
 
-// You can add more routes here (e.g., POST /, GET /, etc.)
-
 export default activitiesRoute;

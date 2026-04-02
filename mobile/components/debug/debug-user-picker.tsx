@@ -1,22 +1,42 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Platform } from "react-native";
 import { Button, Text, View, XStack, YStack } from "tamagui";
-import { useDevUser } from "../../context/dev-user-context";
+import { api } from "../../lib/api";
+import * as SecureStore from 'expo-secure-store';
 
 export function DebugUserPicker() {
-  const { activeUser, setActiveUser } = useDevUser();
+  const [activeUser, setActiveUser] = useState<any | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Restaurer l'utilisateur actif
+    const restoreUser = async () => {
+      try {
+        let debugUserId = null;
+        if (Platform.OS === 'web') {
+          debugUserId = localStorage.getItem('debugUserId');
+        } else {
+          debugUserId = await SecureStore.getItemAsync('debugUserId');
+        }
+        
+        if (debugUserId && users.length > 0) {
+          const u = users.find(u => u.id === debugUserId);
+          if (u) setActiveUser(u);
+        }
+      } catch (err) {}
+    };
+    restoreUser();
+  }, [users]);
+
+  useEffect(() => {
     if (isOpen && users.length === 0) {
       setLoading(true);
-      fetch(`${process.env.EXPO_PUBLIC_API_URL}/auth/dev/users`)
-        .then((res) => res.json())
-        .then((data) => {
-          setUsers(data);
+      api.get('/auth/dev/users')
+        .then((res) => {
+          setUsers(res.data);
           setLoading(false);
         })
         .catch((err) => {
@@ -25,6 +45,29 @@ export function DebugUserPicker() {
         });
     }
   }, [isOpen]);
+
+  const selectUser = async (u: any | null) => {
+    setActiveUser(u);
+    setIsOpen(false);
+    
+    try {
+      if (u) {
+        if (Platform.OS === 'web') {
+          localStorage.setItem('debugUserId', u.id);
+        } else {
+          await SecureStore.setItemAsync('debugUserId', u.id);
+        }
+      } else {
+        if (Platform.OS === 'web') {
+          localStorage.removeItem('debugUserId');
+        } else {
+          await SecureStore.deleteItemAsync('debugUserId');
+        }
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  };
 
   return (
     <>
@@ -64,10 +107,7 @@ export function DebugUserPicker() {
                   backgroundColor={!activeUser ? "#E5E7EB" : "transparent"}
                   borderColor={!activeUser ? "#9CA3AF" : "#E5E7EB"}
                   borderWidth={1}
-                  onPress={() => {
-                    setActiveUser(null);
-                    setIsOpen(false);
-                  }}
+                  onPress={() => selectUser(null)}
                 >
                   <Text color={!activeUser ? "black" : "#6B7280"}>Non connecté</Text>
                 </Button>
@@ -81,10 +121,7 @@ export function DebugUserPicker() {
                       backgroundColor={activeUser?.id === u.id ? "#CCFFFF" : "transparent"}
                       borderColor={activeUser?.id === u.id ? "#006666" : "#E5E7EB"}
                       borderWidth={1}
-                      onPress={() => {
-                        setActiveUser(u);
-                        setIsOpen(false);
-                      }}
+                      onPress={() => selectUser(u)}
                       justifyContent="flex-start"
                       py="$3"
                     >

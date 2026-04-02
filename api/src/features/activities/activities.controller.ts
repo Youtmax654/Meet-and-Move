@@ -23,7 +23,7 @@ export const getActivity = async (c: Context) => {
 
 export const handleJoinActivity = async (c: Context) => {
   const activityId = c.req.param('id');
-  const { userId } = await c.req.json();
+  const userId = c.get('userId');
 
   if (!activityId || !userId) {
     return c.json({ error: "Missing activityId or userId" }, 400);

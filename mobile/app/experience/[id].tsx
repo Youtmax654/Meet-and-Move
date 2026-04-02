@@ -13,6 +13,7 @@ import { HeroSection } from "../../components/experience-details/hero-section";
 import { PriceBreakdown } from "../../components/experience-details/price-breakdown";
 import { SquadMembers } from "../../components/experience-details/squad-members";
 import { NotFoundError } from "../../components/ui/not-found-error";
+import { api } from "../../lib/api";
 
 export default function ExperienceDetailsScreen() {
   const router = useRouter();
@@ -27,28 +28,20 @@ export default function ExperienceDetailsScreen() {
     async function fetchActivity() {
       try {
         setLoading(true);
-        const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-        const url = `${apiUrl}/activities/${id}`;
+        const url = `/activities/${id}`;
         console.log(`Fetching activity from: ${url}`);
         
-        const response = await fetch(url);
-        console.log("Response status:", response.status);
-
-        if (response.status === 404) {
-          throw new Error("Activité introuvable - 404");
-        }
-
-        if (!response.ok) {
-          const errorBody = await response.text();
-          console.error("Error response body:", errorBody);
-          throw new Error(`Échec du chargement (${response.status})`);
-        }
-        const data = await response.json();
-        console.log("Activity data loaded:", data.title);
-        setActivity(data);
+        const response = await api.get(url);
+        console.log("Activity data loaded:", response.data.title);
+        setActivity(response.data);
       } catch (err: any) {
         console.error("Fetch error:", err);
-        setError(err.message || "Une erreur est survenue");
+        
+        if (err.response?.status === 404) {
+          setError("Activité introuvable - 404");
+        } else {
+          setError(err.response?.data?.error || err.message || "Une erreur est survenue");
+        }
       } finally {
         setLoading(false);
       }
