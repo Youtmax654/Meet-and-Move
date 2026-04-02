@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const activitySchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string(),
   description: z.string(),
   price: z.number().optional(),
@@ -10,18 +10,26 @@ export const activitySchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   max_participants: z.number().optional(),
-  host: z.object({
-    id: z.string().uuid(),
-    username: z.string(),
-    bio: z.string().optional(),
-  }).optional(),
-  category: z.object({
-    id: z.string().uuid(),
-    name: z.string(),
-  }).optional(),
-  price_breakdown: z.array(z.object({
-    label: z.string(),
-    amount: z.number(),
-    color: z.string(),
-  })).optional(),
+  host: z
+    .object({
+      id: z.uuid(),
+      username: z.string(),
+      bio: z.string().optional(),
+    })
+    .optional(),
+  category: z
+    .object({
+      id: z.uuid(),
+      name: z.string(),
+    })
+    .optional(),
+  price_breakdown: z
+    .array(
+      z.object({
+        label: z.string(),
+        amount: z.number(),
+        color: z.string(),
+      }),
+    )
+    .optional(),
 });

@@ -16,11 +16,11 @@ export interface Activity {
   longitude?: number;
   max_participants?: number;
   enrolledCount?: number;
-  participants?: Array<{
+  participants?: {
     id: string;
     username: string;
     avatar?: string;
-  }>;
+  }[];
   host?: {
     id: string;
     username: string;
@@ -33,4 +33,5 @@ export interface Activity {
   };
   price_breakdown?: PriceBreakdownItem[];
   eventDate?: string;
+  chatId?: string;
 }

@@ -1,4 +1,4 @@
-export type UpcomingActivity = {
+export type Activity = {
   id: string;
   date: string;
   title: string;

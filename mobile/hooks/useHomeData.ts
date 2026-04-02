@@ -1,24 +1,15 @@
-import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
-import {
-  nearbyGuides as fallbackGuides,
-  upcomingActivities as fallbackActivities,
-  weeklyTopRated as fallbackTopRated,
-} from '@/components/home/data/homeData';
-import { Guide, TopRatedActivity, UpcomingActivity } from '@/components/home/types';
+import { Activity } from "@/components/home/types";
+import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 type HomeData = {
-  activities: UpcomingActivity[];
-  topRated: TopRatedActivity[];
-  guides: Guide[];
+  activities: Activity[];
   loading: boolean;
   error: string | null;
 };
 
 export function useHomeData(): HomeData {
-  const [activities, setActivities] = useState<UpcomingActivity[]>([]);
-  const [topRated, setTopRated] = useState<TopRatedActivity[]>([]);
-  const [guides, setGuides] = useState<Guide[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,8 +23,8 @@ export function useHomeData(): HomeData {
 
         // Fetch activities from real API
         // For topRated and guides, we keep fallbacks for now as they aren't implemented in back yet
-        const response = await api.get('/feed');
-        
+        const response = await api.get("/feed");
+
         if (!isMounted) return;
 
         if (response.data && response.data.length > 0) {
@@ -41,21 +32,11 @@ export function useHomeData(): HomeData {
         } else {
           setActivities([]); // Empty state handled in UI
         }
-
-        // Mocking others for now
-        setTopRated(fallbackTopRated);
-        setGuides(fallbackGuides);
-
       } catch (err) {
         if (!isMounted) return;
-        const message = err instanceof Error ? err.message : 'Erreur inconnue';
+        const message = err instanceof Error ? err.message : "Erreur inconnue";
         setError(message);
-        console.warn('useHomeData error:', message);
-        
-        // Final fallback to mock if API fails completely
-        setActivities(fallbackActivities);
-        setTopRated(fallbackTopRated);
-        setGuides(fallbackGuides);
+        console.warn("useHomeData error:", message);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -68,5 +49,5 @@ export function useHomeData(): HomeData {
     };
   }, []);
 
-  return { activities, topRated, guides, loading, error };
+  return { activities, loading, error };
 }
