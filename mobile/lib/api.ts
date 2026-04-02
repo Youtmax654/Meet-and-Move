@@ -23,7 +23,12 @@ api.interceptors.request.use(async (config) => {
     }
 
     if (debugUserId) {
-      config.headers["X-Debug-User-Id"] = debugUserId;
+      config.headers = config.headers || Object.assign({});
+      if (typeof config.headers.set === "function") {
+        config.headers.set("X-Debug-User-Id", debugUserId);
+      } else {
+        (config.headers as any)["X-Debug-User-Id"] = debugUserId;
+      }
     }
   } catch (error) {
     console.error("Erreur lors de la récupération du debugUserId", error);

@@ -19,7 +19,7 @@ export function DebugUserPicker() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Restaurer l'utilisateur actif
+    // Restaurer l'utilisateur actif au démarrage
     const restoreUser = async () => {
       try {
         let debugUserId = null;

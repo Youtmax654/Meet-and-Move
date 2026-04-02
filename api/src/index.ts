@@ -8,6 +8,7 @@ import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
 import authRoute from "./features/auth/auth.routes";
 import chatsRoute from "./features/chats/chats.routes";
+import feedRoute from "./features/feed/feed.route";
 import { authMiddleware } from "./middleware/auth";
 
 type AppEnv = {
@@ -54,9 +55,10 @@ app.get("/", (c) => {
     message: "Welcome to the Meet and Move API",
   });
 });
-
 app.route("/auth", authRoute);
 
+app.route("/activities", activitiesRoute);
+app.route("/feed", feedRoute);
 app.route("/chats", chatsRoute);
 app.route("/activities", activitiesRoute);
 
