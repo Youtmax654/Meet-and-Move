@@ -18,7 +18,7 @@ export function UpcomingActivityCard({ activity }: UpcomingActivityCardProps) {
         <Pressable onPress={() => router.push(`/experience/${activity.id}`)}>
             <YStack
                 width={280}
-                height={341.5}
+                height={350}
                 borderRadius={24}
                 backgroundColor="#FFFFFF"
                 shadowColor="#000"
@@ -55,8 +55,8 @@ export function UpcomingActivityCard({ activity }: UpcomingActivityCardProps) {
                     </XStack>
                 </YStack>
 
-                <YStack paddingHorizontal={20} paddingTop={19} paddingBottom={20} flex={1} justifyContent="space-between">
-                    <YStack gap={8}>
+                <YStack paddingHorizontal={20} paddingTop={19} paddingBottom={32} flex={1}>
+                    <YStack gap={8} height={75}>
                         <Text fontSize={18} lineHeight={22.5} color="#2E2F2E" fontWeight="700" numberOfLines={2}>
                             {activity.title}
                         </Text>
@@ -71,7 +71,7 @@ export function UpcomingActivityCard({ activity }: UpcomingActivityCardProps) {
                         </XStack>
                     </YStack>
 
-                    <XStack justifyContent="space-between" alignItems="center" paddingTop={8}>
+                    <XStack justifyContent="space-between" alignItems="center" paddingTop={8} marginTop="auto">
                         <AvatarGroup avatars={activity.avatars} extra={activity.extra} />
 
                         <YStack alignItems="flex-end">
