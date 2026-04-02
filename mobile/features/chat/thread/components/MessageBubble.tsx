@@ -78,10 +78,7 @@ export function MessageBubble({
           gap="$2"
         >
           <Text fontSize={10} color="#5B5C5B">
-            {new Date(timestamp).toLocaleDateString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {timestamp}
           </Text>
         </XStack>
       </YStack>

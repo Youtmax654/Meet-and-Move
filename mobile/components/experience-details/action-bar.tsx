@@ -1,22 +1,49 @@
-import { api } from "@/lib/api";
+import { api, getUserId } from "@/lib/api";
 import { Ionicons } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Spinner, Text, View, XStack } from "tamagui";
 import { useToast } from "../../context/toast-context";
+import { INBOX_QUERY_KEY } from "../../features/chat/inbox/hooks/use-inbox";
 import { Activity } from "../../types/activity";
 
 export function ActionBar({ activity }: { activity?: Activity }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const handleJoin = async () => {
+  useEffect(() => {
+    async function loadUserId() {
+      const id = await getUserId();
+      setCurrentUserId(id);
+    }
+    loadUserId();
+  }, []);
+
+  const hasJoined = Boolean(
+    currentUserId &&
+    activity?.participants?.some((p) => p.id === currentUserId),
+  );
+
+  const handlePress = async () => {
     if (!activity) return;
+
+    if (hasJoined) {
+      if (activity.chatId) {
+        router.push(`/chat/${activity.chatId}`);
+      } else {
+        showToast("La discussion n'est pas encore disponible.", "error");
+      }
+      return;
+    }
 
     try {
       setLoading(true);
       const response = await api.post(`/activities/${activity.id}/join`);
+      await queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
       showToast(
         `Bravo ! Tu as rejoint l'activité "${activity.title}"`,
         "success",
@@ -67,7 +94,7 @@ export function ActionBar({ activity }: { activity?: Activity }) {
           backgroundColor="#006666"
           borderRadius={9999}
           height={56}
-          onPress={handleJoin}
+          onPress={handlePress}
           disabled={loading}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
         >
@@ -75,7 +102,7 @@ export function ActionBar({ activity }: { activity?: Activity }) {
             <Spinner color="white" />
           ) : (
             <Text color="#FFFFFF" fontWeight="700" fontSize={16}>
-              Rejoindre l&apos;Équipe
+              {hasJoined ? "Aller vers la discussion" : "Rejoindre l'Équipe"}
             </Text>
           )}
         </Button>

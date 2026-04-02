@@ -1,21 +1,22 @@
-import { Context, Next } from 'hono';
+import { Context, Next } from "hono";
 
 export const authMiddleware = async (c: Context, next: Next) => {
   const path = c.req.path;
-  
+
   // Skip auth for base route and auth routes
   if (path === "/" || path.startsWith("/auth/")) {
     return await next();
   }
 
-  const userId = c.req.header('X-Debug-User-Id');
-  
+  const userId = c.req.header("X-Debug-User-Id");
+
   if (!userId) {
-    return c.json({ error: "Non autorisé, veuillez vous connecter (Debug User Picker)." }, 401);
+    return c.json(
+      { error: "Non autorisé, veuillez vous connecter (Debug User Picker)." },
+      401,
+    );
   }
 
-  console.debug(`Authentification réussie pour l'utilisateur avec ID: ${userId}`);
-
-  c.set('userId', userId);
+  c.set("userId", userId);
   await next();
 };
