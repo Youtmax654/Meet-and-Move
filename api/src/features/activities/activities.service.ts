@@ -67,3 +67,31 @@ export const getActivityById = async (id: string) => {
   }
 };
 
+export const joinActivity = async (activityId: string, userId: string): Promise<{ success: boolean }> => {
+  const db = getDb();
+
+  const existing = await db
+    .select()
+    .from(activityParticipants)
+    .where(
+      and(
+        eq(activityParticipants.activityId, activityId),
+        eq(activityParticipants.userId, userId)
+      )
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    throw new Error("ALREADY_JOINED");
+  }
+
+  await db.insert(activityParticipants).values({
+    activityId,
+    userId,
+    status: "accepted",
+    joinedAt: new Date(),
+  });
+
+  return { success: true };
+};
+
