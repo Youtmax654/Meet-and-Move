@@ -6,6 +6,9 @@ import { Client } from "pg";
 import { dbContext } from "./db";
 import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
+import authRoute from "./features/auth/auth.routes";
+import chatsRoute from "./features/chats/chats.routes";
+import { authMiddleware } from "./middleware/auth";
 
 type AppEnv = {
   Bindings: {
@@ -19,6 +22,14 @@ type AppEnv = {
 const app = new Hono<AppEnv>();
 
 app.use("*", cors());
+app.use("*", async (c, next) => {
+  const url = new URL(c.req.url);
+  const publicPaths = ["/auth"];
+  if (publicPaths.some((path) => url.pathname.startsWith(path))) {
+    return next();
+  }
+  return authMiddleware(c, next);
+});
 
 app.use("*", async (c, next) => {
   const client = new Client({ connectionString: c.env.POSTGRES_URL });
@@ -44,7 +55,9 @@ app.get("/", (c) => {
   });
 });
 
+app.route("/auth", authRoute);
+
+app.route("/chats", chatsRoute);
 app.route("/activities", activitiesRoute);
 
 export default app;
-

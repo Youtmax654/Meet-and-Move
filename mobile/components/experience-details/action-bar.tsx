@@ -1,8 +1,50 @@
+import { api } from "@/lib/api";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Text, View, XStack } from "tamagui";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Button, Spinner, Text, View, XStack } from "tamagui";
+import { useToast } from "../../context/toast-context";
 import { Activity } from "../../types/activity";
 
 export function ActionBar({ activity }: { activity?: Activity }) {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const handleJoin = async () => {
+    if (!activity) return;
+
+    try {
+      setLoading(true);
+      const response = await api.post(`/activities/${activity.id}/join`);
+      showToast(
+        `Bravo ! Tu as rejoint l'activité "${activity.title}"`,
+        "success",
+      );
+
+      setTimeout(() => {
+        router.replace("/(tabs)");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Join error:", error);
+      if (error.response?.status === 401) {
+        showToast(
+          "Sélectionne d'abord un utilisateur dans le menu de debug (icône bug) !",
+          "error",
+        );
+      } else {
+        showToast(
+          error.response?.data?.error ||
+            error.message ||
+            "Une erreur est survenue",
+          "error",
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View
       position="absolute"
@@ -25,11 +67,17 @@ export function ActionBar({ activity }: { activity?: Activity }) {
           backgroundColor="#006666"
           borderRadius={9999}
           height={56}
+          onPress={handleJoin}
+          disabled={loading}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
         >
-          <Text color="#FFFFFF" fontWeight="700" fontSize={16}>
-            Rejoindre l'Équipe
-          </Text>
+          {loading ? (
+            <Spinner color="white" />
+          ) : (
+            <Text color="#FFFFFF" fontWeight="700" fontSize={16}>
+              Rejoindre l&apos;Équipe
+            </Text>
+          )}
         </Button>
         <Button
           width={56}

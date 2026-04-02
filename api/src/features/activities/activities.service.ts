@@ -1,6 +1,6 @@
+import { and, eq } from "drizzle-orm";
 import { getDb } from "../../db";
-import { activities, users, interests, activityParticipants } from "../../db/schema";
-import { eq, sql as drizzleSql, and } from "drizzle-orm";
+import { activities, activityParticipants, interests, users } from "../../db/schema";
 
 export const getActivityById = async (id: string) => {
   const db = getDb();
@@ -65,5 +65,33 @@ export const getActivityById = async (id: string) => {
     console.error("Drizzle Query Error:", error);
     throw error;
   }
+};
+
+export const joinActivity = async (activityId: string, userId: string): Promise<{ success: boolean }> => {
+  const db = getDb();
+
+  const existing = await db
+    .select()
+    .from(activityParticipants)
+    .where(
+      and(
+        eq(activityParticipants.activityId, activityId),
+        eq(activityParticipants.userId, userId)
+      )
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    throw new Error("ALREADY_JOINED");
+  }
+
+  await db.insert(activityParticipants).values({
+    activityId,
+    userId,
+    status: "accepted",
+    joinedAt: new Date(),
+  });
+
+  return { success: true };
 };
 
