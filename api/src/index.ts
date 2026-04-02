@@ -6,6 +6,7 @@ import { Client } from "pg";
 import { dbContext } from "./db";
 import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
+import authRoute from "./features/auth/auth.routes";
 
 type AppEnv = {
   Bindings: {
@@ -45,6 +46,7 @@ app.get("/", (c) => {
 });
 
 app.route("/activities", activitiesRoute);
+app.route("/auth", authRoute);
 
 export default app;
 

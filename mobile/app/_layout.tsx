@@ -9,6 +9,8 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { TamaguiProvider } from "tamagui";
 import { config } from "../tamagui.config";
+import { DebugUserPicker } from "../components/debug/debug-user-picker";
+import { DevUserProvider } from "../context/dev-user-context";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -20,15 +22,18 @@ export default function RootLayout() {
   return (
     <TamaguiProvider config={config} defaultTheme="light">
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="experience/[id]" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: "modal", title: "Modal" }}
-          />
-        </Stack>
-        <StatusBar style="auto" />
+        <DevUserProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="experience/[id]" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="modal"
+              options={{ presentation: "modal", title: "Modal" }}
+            />
+          </Stack>
+          <DebugUserPicker />
+          <StatusBar style="auto" />
+        </DevUserProvider>
       </ThemeProvider>
     </TamaguiProvider>
   );
