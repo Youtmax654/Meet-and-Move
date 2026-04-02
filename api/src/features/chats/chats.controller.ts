@@ -1,11 +1,17 @@
 import { Context } from "hono";
 import { streamSSE } from "hono/streaming";
 import { createSubscriber, publisher } from "../../db/redis";
-import chatsService from "./chats.service";
 import { sendMessageBodySchema } from "./chats.schema";
+import chatsService from "./chats.service";
 
-export const getAllChats = async (c: Context) => {
-  const chats = await chatsService.getAllChats();
+export const getChats = async (c: Context) => {
+  const userId = c.get("userId");
+
+  if (!userId) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const chats = await chatsService.getChats(userId);
 
   if (chats.length === 0) {
     return c.json({ error: "No chats found" }, 404);
@@ -15,8 +21,9 @@ export const getAllChats = async (c: Context) => {
 };
 
 export const getChatMessagesById = async (c: Context) => {
+  const userId = c.get("userId");
   const { id } = c.req.param();
-  const chat = await chatsService.getChatMessagesById(id);
+  const chat = await chatsService.getChatMessagesById(userId, id);
 
   if (chat.length === 0) {
     return c.json({ error: "Chat messages not found" }, 404);
@@ -26,6 +33,7 @@ export const getChatMessagesById = async (c: Context) => {
 };
 
 export const sendMessage = async (c: Context) => {
+  const userId = c.get("userId");
   const { id: chatId } = c.req.param();
   const body = await c.req.json();
 
@@ -38,13 +46,16 @@ export const sendMessage = async (c: Context) => {
 
   const message = await chatsService.createMessage(chatId, senderId, content);
 
-  // Publish the message to the Redis channel for real-time SSE delivery
-  await publisher.publish(
-    `chat:${chatId}`,
-    JSON.stringify(message),
-  );
+  const messageWithSelfInfo = {
+    ...message,
+    isSelfMessage: message.senderId === userId,
+  };
 
-  return c.json(message, 201);
+  // Publish the raw message to the Redis channel for real-time SSE delivery
+  // The frontend can determine isSelfMessage from the senderId on incoming events
+  await publisher.publish(`chat:${chatId}`, JSON.stringify(message));
+
+  return c.json(messageWithSelfInfo, 201);
 };
 
 export const streamMessages = async (c: Context) => {

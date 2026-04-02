@@ -1,24 +1,15 @@
 import React from "react";
 import { ScrollView, YStack } from "tamagui";
-import { ThreadMessageJoined } from "../../shared/schemas/chat.schema";
-import { ExperienceWidget } from "./ExperienceWidget";
+import { Chat, Message } from "../../shared/schemas/chat.schema";
 import { MessageBubble } from "./MessageBubble";
 
 interface MessageListProps {
-  messages: ThreadMessageJoined[];
+  messages: Message[];
+  chatDetails: Chat | undefined;
 }
 export function MessageList({ messages }: MessageListProps) {
   return (
-    <ScrollView
-      flex={1}
-      contentContainerStyle={{ paddingBottom: 24, paddingTop: 16 }}
-    >
-      <ExperienceWidget
-        status="Squad Actif"
-        title="Sommet & Partage : Chamonix"
-        date="Sam. 14 Oct. • 09:00"
-      />
-
+    <ScrollView flex={1}>
       <YStack marginTop="$4" gap="$2">
         {messages.map((msg) => {
           // if (msg.type === "system") {
@@ -26,14 +17,13 @@ export function MessageList({ messages }: MessageListProps) {
           // }
           return (
             <MessageBubble
-              key={msg.messages.id}
-              id={msg.messages.id}
-              text={msg.messages.content || ""}
-              senderName={msg.users.username}
-              timestamp={msg.messages.sentAt.toLocaleString() || ""}
-              isSelf={false}
+              key={msg.id}
+              id={msg.id}
+              text={msg.content || ""}
+              senderName={msg.senderUsername}
+              timestamp={msg.sentAt.toLocaleString() || ""}
+              isSelf={!!msg.isSelfMessage}
               avatarUrl={""}
-              status={"delivered"}
             />
           );
         })}

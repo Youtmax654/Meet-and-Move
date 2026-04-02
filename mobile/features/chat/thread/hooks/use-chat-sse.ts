@@ -58,6 +58,7 @@ export function useChatSse(chatId: string, userId: string) {
                   senderId: newMessage.senderId,
                   content: newMessage.content,
                   sentAt: newMessage.sentAt,
+                  isSelfMessage: newMessage.isSelfMessage,
                 },
                 users: {
                   id: newMessage.senderId,

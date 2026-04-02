@@ -8,7 +8,6 @@ interface MessageBubbleProps {
   timestamp: string;
   isSelf: boolean;
   avatarUrl?: string;
-  status?: string; // "delivered", "read"
 }
 
 export function MessageBubble({
@@ -17,7 +16,6 @@ export function MessageBubble({
   timestamp,
   isSelf,
   avatarUrl,
-  status,
 }: MessageBubbleProps) {
   return (
     <XStack
@@ -79,11 +77,6 @@ export function MessageBubble({
           marginRight={isSelf ? "$2" : 0}
           gap="$2"
         >
-          {isSelf && status && (
-            <Text fontSize={10} color="#5B5C5B">
-              {status}
-            </Text>
-          )}
           <Text fontSize={10} color="#5B5C5B">
             {new Date(timestamp).toLocaleDateString("fr-FR", {
               hour: "2-digit",

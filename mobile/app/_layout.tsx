@@ -10,6 +10,8 @@ import { StatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import "react-native-reanimated";
 import { TamaguiProvider } from "tamagui";
+import { DebugUserPicker } from "../components/debug/debug-user-picker";
+import { ToastProvider } from "../context/toast-context";
 import { config } from "../tamagui.config";
 
 export const unstable_settings = {
@@ -18,31 +20,39 @@ export const unstable_settings = {
 
 const queryClient = new QueryClient();
 
+function RootLayoutContent() {
+  return (
+    <>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="experience/[id]" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Modal" }}
+        />
+      </Stack>
+      <DebugUserPicker />
+      <StatusBar style="auto" />
+    </>
+  );
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <TamaguiProvider config={config} defaultTheme="light">
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <TamaguiProvider config={config} defaultTheme="light">
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
           <KeyboardProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="experience/[id]"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="modal"
-                options={{ presentation: "modal", title: "Modal" }}
-              />
-            </Stack>
-            <StatusBar style="auto" />
+            <ToastProvider>
+              <RootLayoutContent />
+            </ToastProvider>
           </KeyboardProvider>
         </ThemeProvider>
-      </QueryClientProvider>
-    </TamaguiProvider>
+      </TamaguiProvider>
+    </QueryClientProvider>
   );
 }

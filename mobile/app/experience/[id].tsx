@@ -6,7 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, View, XStack } from "tamagui";
 import { Activity } from "../../types/activity";
 
-import { ActionBar } from "../../components/experience-details/action-bar";
+import { ActionBar } from "@/components/experience-details/action-bar";
+import { api } from "@/lib/api";
 import { ExperienceDescription } from "../../components/experience-details/experience-description";
 import { ExperienceHeader } from "../../components/experience-details/experience-header";
 import { HeroSection } from "../../components/experience-details/hero-section";
@@ -27,28 +28,24 @@ export default function ExperienceDetailsScreen() {
     async function fetchActivity() {
       try {
         setLoading(true);
-        const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-        const url = `${apiUrl}/activities/${id}`;
+        const url = `/activities/${id}`;
         console.log(`Fetching activity from: ${url}`);
-        
-        const response = await fetch(url);
-        console.log("Response status:", response.status);
 
-        if (response.status === 404) {
-          throw new Error("Activité introuvable - 404");
-        }
-
-        if (!response.ok) {
-          const errorBody = await response.text();
-          console.error("Error response body:", errorBody);
-          throw new Error(`Échec du chargement (${response.status})`);
-        }
-        const data = await response.json();
-        console.log("Activity data loaded:", data.title);
-        setActivity(data);
+        const response = await api.get(url);
+        console.log("Activity data loaded:", response.data.title);
+        setActivity(response.data);
       } catch (err: any) {
         console.error("Fetch error:", err);
-        setError(err.message || "Une erreur est survenue");
+
+        if (err.response?.status === 404) {
+          setError("Activité introuvable - 404");
+        } else {
+          setError(
+            err.response?.data?.error ||
+              err.message ||
+              "Une erreur est survenue",
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -74,9 +71,15 @@ export default function ExperienceDetailsScreen() {
 
   if (error || !activity) {
     return (
-      <NotFoundError 
-        title={error?.includes("404") ? "Activité introuvable" : "Erreur de chargement"}
-        message={error || "L'activité que tu cherches n'existe pas ou a été supprimée."}
+      <NotFoundError
+        title={
+          error?.includes("404")
+            ? "Activité introuvable"
+            : "Erreur de chargement"
+        }
+        message={
+          error || "L'activité que tu cherches n'existe pas ou a été supprimée."
+        }
         buttonText="Retour"
         onPress={() => router.back()}
       />

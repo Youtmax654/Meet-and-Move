@@ -2,13 +2,8 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator } from "react-native";
 import { ScrollView, Text, YStack } from "tamagui";
-import { type Chat } from "../../shared/schemas/chat.schema";
 import { useInbox } from "../hooks/use-inbox";
 import { InboxItem } from "./InboxItem";
-
-function chatTypeLabel(type: Chat["type"]): string {
-  return type === "group" ? "Groupe" : "Privé";
-}
 
 export function InboxList() {
   const router = useRouter();
@@ -56,14 +51,15 @@ export function InboxList() {
             item={{
               id: chat.id,
               type: chat.type === "group" ? "squad" : "individual",
-              name: chatTypeLabel(chat.type),
-              message: chat.activityId
-                ? `Activité liée : ${chat.activityId}`
-                : "Pas d'activité liée",
-              time: new Date(chat.createdAt).toLocaleDateString("fr-FR", {
-                day: "2-digit",
-                month: "short",
-              }),
+              name: chat.title || "Conversation sans titre",
+              message: chat.lastMessage || "Dernier message non disponible",
+              time: new Date(chat.lastMessageSentAt || "").toLocaleDateString(
+                "fr-FR",
+                {
+                  day: "2-digit",
+                  month: "short",
+                },
+              ),
               unreadCount: 0,
               online: false,
               archived: false,
