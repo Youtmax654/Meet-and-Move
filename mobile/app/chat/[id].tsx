@@ -10,12 +10,10 @@ import { ActivityIndicator, Platform } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { YStack } from "tamagui";
 
-const CURRENT_USER_ID = "aaaa1111-aaaa-1111-aaaa-111111111111";
-
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: messages, isLoading } = useThread(id!);
-  const { sendMessage } = useChatSse(id!, CURRENT_USER_ID);
+  const { sendMessage } = useChatSse(id);
 
   const { data: inbox } = useInbox();
   const chatDetails = inbox?.find((chat) => chat.id === id);

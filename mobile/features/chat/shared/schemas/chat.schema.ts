@@ -8,8 +8,8 @@ export const chatSchema = z.object({
   activityId: z.uuid().nullable(),
   type: chatTypeSchema,
   lastMessage: z.string().nullable(),
-  lastMessageSentAt: z.string().or(z.date()).nullable(), // API often returns string for ISO date
-  createdAt: z.string().or(z.date()), // API often returns string for ISO date
+  lastMessageSentAt: z.coerce.date().nullable(), // API often returns string for ISO date
+  createdAt: z.coerce.date(), // API often returns string for ISO date
 });
 
 export const chatsSchema = z.array(chatSchema);
@@ -19,11 +19,15 @@ export const messageSchema = z.object({
   senderId: z.uuid(),
   senderUsername: z.string(),
   content: z.string().nullable(),
-  sentAt: z.string().or(z.date()),
+  sentAt: z.coerce.date(),
   isSelfMessage: z.boolean().optional(),
 });
 
 export const messagesSchema = z.array(messageSchema);
+
+export const sendMessageBodySchema = z.object({
+  content: z.string().min(1),
+});
 
 export type Chat = z.infer<typeof chatSchema>;
 export type Message = z.infer<typeof messageSchema>;

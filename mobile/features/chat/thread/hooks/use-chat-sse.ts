@@ -1,13 +1,11 @@
-import { api } from "@/lib/api";
+import { api, getUserId } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import EventSource from "react-native-sse";
-import type { ThreadMessageJoined } from "../../shared/schemas/chat.schema";
+import { Message, messageSchema } from "../../shared/schemas/chat.schema";
 import { THREAD_QUERY_KEY } from "./use-thread";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL
-  ? `http://${process.env.EXPO_PUBLIC_API_URL}`
-  : "http://localhost:8787";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8787";
 
 /**
  * Hook that manages real-time chat via SSE (Server-Sent Events).
@@ -16,77 +14,134 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL
  * - Appends incoming messages to the TanStack Query cache
  * - Exposes `sendMessage(content)` which POSTs to the API
  */
-export function useChatSse(chatId: string, userId: string) {
+export function useChatSse(chatId: string) {
   const queryClient = useQueryClient();
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    const url = `${API_BASE_URL}/chats/${chatId}/stream`;
-    const es = new EventSource(url);
-    esRef.current = es;
+    let es: EventSource | null = null;
+    let isMounted = true;
 
-    es.addEventListener("message", (event) => {
-      if (!event.data) return;
+    const connectSse = async () => {
+      const userId = await getUserId();
 
-      try {
-        const newMessage = JSON.parse(event.data);
-
-        // Append the new message to the TanStack Query cache
-        queryClient.setQueryData<ThreadMessageJoined[]>(
-          THREAD_QUERY_KEY(chatId),
-          (old) => {
-            if (!old) return old;
-
-            // Avoid duplicates (in case we receive our own message back)
-            const exists = old.some(
-              (item) => item.messages.id === newMessage.id,
-            );
-            if (exists) return old;
-
-            return [
-              ...old,
-              {
-                chats: old[0]?.chats ?? {
-                  id: chatId,
-                  activityId: null,
-                  type: "group" as const,
-                  createdAt: new Date().toISOString(),
-                },
-                messages: {
-                  id: newMessage.id,
-                  chatId: newMessage.chatId,
-                  senderId: newMessage.senderId,
-                  content: newMessage.content,
-                  sentAt: newMessage.sentAt,
-                  isSelfMessage: newMessage.isSelfMessage,
-                },
-                users: {
-                  id: newMessage.senderId,
-                  username: newMessage.senderUsername ?? "Utilisateur",
-                },
-              },
-            ];
-          },
-        );
-      } catch {
-        // Ignore malformed messages
+      if (!isMounted) return;
+      if (!userId) {
+        console.error("Not authenticated, cannot connect to chat SSE");
+        return;
       }
-    });
+
+      const url = `${API_BASE_URL}/chats/${chatId}/stream`;
+
+      es = new EventSource(url, {
+        headers: {
+          "X-Debug-User-Id": userId,
+        },
+      });
+      esRef.current = es;
+
+      es.addEventListener("message", (event) => {
+        if (!event.data) return;
+
+        try {
+          const newMessage = JSON.parse(event.data);
+
+          // Append the new message to the TanStack Query cache
+          queryClient.setQueryData<Message[]>(
+            THREAD_QUERY_KEY(chatId),
+            (old) => {
+              if (!old) {
+                const parsedMsg = messageSchema.parse(newMessage);
+                parsedMsg.isSelfMessage = parsedMsg.senderId === userId;
+                return [parsedMsg];
+              }
+
+              const parsedMessage = messageSchema.parse(newMessage);
+
+              // Set isSelfMessage correctly before caching
+              parsedMessage.isSelfMessage = parsedMessage.senderId === userId;
+
+              // Avoid duplicates (in case we receive our own message back)
+              if (old.some((item) => item.id === parsedMessage.id)) return old;
+
+              // Replace the optimistic message if it exists
+              const tempIndex = old.findIndex(
+                (item) =>
+                  item.id.startsWith("temp-") &&
+                  item.content === parsedMessage.content &&
+                  item.senderId === parsedMessage.senderId,
+              );
+
+              if (tempIndex !== -1) {
+                const newMessages = [...old];
+                newMessages[tempIndex] = parsedMessage;
+                return newMessages;
+              }
+
+              return [...old, parsedMessage];
+            },
+          );
+        } catch (error) {
+          console.error("Error parsing SSE message:", error);
+        }
+      });
+    };
+
+    connectSse();
 
     return () => {
-      es.close();
+      isMounted = false;
+      if (es) {
+        es.close();
+      }
       esRef.current = null;
     };
   }, [chatId, queryClient]);
 
   const sendMessage = useCallback(
     async (content: string) => {
-      await api.post(`/chats/${chatId}/messages`, {
+      const userId = await getUserId();
+      if (!userId) return;
+
+      // Optimistically add the message to the cache first
+      const tempId = `temp-${Date.now()}`;
+      const optimisticMessage: Message = {
+        id: tempId,
         senderId: userId,
+        senderUsername: "You",
         content,
+        sentAt: new Date(),
+        isSelfMessage: true,
+      };
+
+      // Backup the previous state for rollback
+      const previousMessages = queryClient.getQueryData<Message[]>(
+        THREAD_QUERY_KEY(chatId),
+      );
+
+      queryClient.setQueryData<Message[]>(THREAD_QUERY_KEY(chatId), (old) => {
+        if (!old) return [optimisticMessage];
+        return [...old, optimisticMessage];
       });
+
+      try {
+        await api.post(`/chats/${chatId}/messages`, {
+          senderId: userId,
+          content,
+        });
+      } catch (error) {
+        // Rollback cache if network request fails
+        if (previousMessages) {
+          queryClient.setQueryData<Message[]>(
+            THREAD_QUERY_KEY(chatId),
+            previousMessages,
+          );
+        }
+        console.error("Failed to publish message:", error);
+        throw error;
+      }
     },
-    [chatId, userId],
+    [chatId, queryClient],
   );
 
   return { sendMessage };

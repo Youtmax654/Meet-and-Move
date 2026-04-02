@@ -72,6 +72,14 @@ const chatsService = {
       .from(schema.messages)
       .rightJoin(schema.users, eq(schema.messages.senderId, schema.users.id))
       .innerJoin(schema.chats, eq(schema.messages.chatId, schema.chats.id))
+      .innerJoin(
+        schema.chatMembers,
+        and(
+          eq(schema.chatMembers.chatId, schema.chats.id),
+          eq(schema.chatMembers.chatId, id),
+          eq(schema.chatMembers.userId, userId),
+        ),
+      )
       .where(eq(schema.messages.chatId, id))
       .orderBy(asc(schema.messages.sentAt));
 
@@ -80,13 +88,41 @@ const chatsService = {
     return parsedResult;
   },
 
+  checkMembership: async (chatId: string, userId: string) => {
+    const [membership] = await getDb()
+      .select({ id: schema.chatMembers.chatId })
+      .from(schema.chatMembers)
+      .where(
+        and(
+          eq(schema.chatMembers.chatId, chatId),
+          eq(schema.chatMembers.userId, userId),
+        ),
+      );
+    return !!membership;
+  },
+
   createMessage: async (chatId: string, senderId: string, content: string) => {
+    // Check if the user is a member of the chat
+    const isMember = await chatsService.checkMembership(chatId, senderId);
+
+    if (!isMember) {
+      throw new Error("User is not a member of this chat");
+    }
+
     const [message] = await getDb()
       .insert(schema.messages)
       .values({ chatId, senderId, content })
       .returning();
 
-    return message;
+    const [user] = await getDb()
+      .select({ username: schema.users.username })
+      .from(schema.users)
+      .where(eq(schema.users.id, senderId));
+
+    return {
+      ...message,
+      senderUsername: user?.username || "Unknown",
+    };
   },
 };
 

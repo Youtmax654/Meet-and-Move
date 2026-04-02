@@ -1,17 +1,31 @@
 import Redis from "ioredis";
 
-const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+export async function publishToRedis(channel: string, message: string) {
+  const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
-/**
- * Publisher instance — used to publish messages to Redis channels.
- */
-export const publisher = new Redis(redisUrl);
+  const tempPublisher = new Redis(redisUrl, {
+    lazyConnect: true,
+    enableOfflineQueue: false,
+  });
 
-/**
- * Creates a new subscriber instance.
- * Each SSE connection needs its own subscriber because ioredis
- * puts a client in "subscriber mode" once subscribe() is called.
- */
-export function createSubscriber() {
-  return new Redis(redisUrl);
+  try {
+    await tempPublisher.connect();
+
+    const result = await tempPublisher.publish(channel, message);
+    return result;
+  } finally {
+    await tempPublisher.quit();
+  }
+}
+
+export async function createSubscriber(): Promise<Redis> {
+  const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+
+  const subscriber = new Redis(redisUrl, {
+    lazyConnect: true,
+    enableOfflineQueue: false,
+  });
+
+  await subscriber.connect();
+  return subscriber;
 }

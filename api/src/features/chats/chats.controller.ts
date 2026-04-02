@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { streamSSE } from "hono/streaming";
-import { createSubscriber, publisher } from "../../db/redis";
+import { createSubscriber, publishToRedis } from "../../db/redis";
 import { sendMessageBodySchema } from "./chats.schema";
 import chatsService from "./chats.service";
 
@@ -13,21 +13,14 @@ export const getChats = async (c: Context) => {
 
   const chats = await chatsService.getChats(userId);
 
-  if (chats.length === 0) {
-    return c.json({ error: "No chats found" }, 404);
-  }
-
   return c.json(chats);
 };
 
 export const getChatMessagesById = async (c: Context) => {
   const userId = c.get("userId");
   const { id } = c.req.param();
-  const chat = await chatsService.getChatMessagesById(userId, id);
 
-  if (chat.length === 0) {
-    return c.json({ error: "Chat messages not found" }, 404);
-  }
+  const chat = await chatsService.getChatMessagesById(userId, id);
 
   return c.json(chat);
 };
@@ -37,7 +30,10 @@ export const sendMessage = async (c: Context) => {
   const { id: chatId } = c.req.param();
   const body = await c.req.json();
 
-  const parsed = sendMessageBodySchema.safeParse(body);
+  const parsed = sendMessageBodySchema.safeParse({
+    senderId: userId,
+    ...body,
+  });
   if (!parsed.success) {
     return c.json({ error: "Invalid body", details: parsed.error.issues }, 400);
   }
@@ -53,14 +49,20 @@ export const sendMessage = async (c: Context) => {
 
   // Publish the raw message to the Redis channel for real-time SSE delivery
   // The frontend can determine isSelfMessage from the senderId on incoming events
-  await publisher.publish(`chat:${chatId}`, JSON.stringify(message));
-
+  await publishToRedis(`chat:${chatId}`, JSON.stringify(message));
   return c.json(messageWithSelfInfo, 201);
 };
 
 export const streamMessages = async (c: Context) => {
   const { id: chatId } = c.req.param();
-  const subscriber = createSubscriber();
+  const userId = c.get("userId");
+
+  const isMember = await chatsService.checkMembership(chatId, userId);
+  if (!isMember) {
+    return c.json({ error: "Forbidden: Not a member of this chat" }, 403);
+  }
+
+  const subscriber = await createSubscriber();
 
   return streamSSE(c, async (stream) => {
     // Subscribe to the Redis channel for this chat
