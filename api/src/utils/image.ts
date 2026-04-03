@@ -7,8 +7,9 @@ export function getActivityImageUrl(categoryName?: string, activityId?: string) 
   
   const keywordMap: Record<string, string> = {
     'sport': 'fitness',
-    'voyage': 'nature',
-    'food': 'restaurant',
+    'voyage': 'travel',
+    'gastronomie & cuisine': 'food',
+    'culture & patrimoine': 'culture',
   };
 
   const keyword = keywordMap[category] || 'activity';

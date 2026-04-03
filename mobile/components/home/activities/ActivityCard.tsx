@@ -85,10 +85,13 @@ export function ActivityCard({ activity }: ActivityCardProps) {
           <XStack
             justifyContent="space-between"
             alignItems="center"
-            paddingTop={8}
+            paddingTop={12}
             marginTop="auto"
           >
             <AvatarGroup avatars={activity.avatars} extra={activity.extra} />
+            <Text fontSize={18} fontWeight="800" color="#4953AC">
+              {activity.price}{!String(activity.price).includes("€") ? "€" : ""}
+            </Text>
           </XStack>
         </YStack>
       </YStack>
