@@ -1,4 +1,11 @@
-import React, { createContext, useCallback, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, Text, YStack } from "tamagui";
 
 type ToastType = "success" | "error" | "info";
@@ -14,12 +21,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     message: string;
     type: ToastType;
   } | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((message: string, type: ToastType = "info") => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     setToast({ message, type });
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setToast(null);
+      timeoutRef.current = null;
     }, 3000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
 
   return (

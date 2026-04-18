@@ -1,6 +1,7 @@
 import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
+import type { FeedActivity } from "./feed.schema";
 
-export function mapActivityToCard(activity: any) {
+export const mapActivityToCard = (activity: FeedActivity) => {
   return {
     id: activity.id,
 
@@ -24,7 +25,7 @@ export function mapActivityToCard(activity: any) {
 
     price: activity.price ? `${activity.price}€` : "N/A",
   };
-}
+};
 
 // ---------------- HELPERS ----------------
 
@@ -36,7 +37,10 @@ function formatDate(date: string | Date | null) {
   });
 }
 
-function formatLocation(lat: number | string, lng: number | string) {
+function formatLocation(
+  _lat: number | string | null,
+  _lng: number | string | null,
+) {
   // Optionnel: on pourrait utiliser un reverse geocoding plus tard
   return `Lyon, FR`;
 }

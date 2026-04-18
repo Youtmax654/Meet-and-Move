@@ -2,7 +2,7 @@ import { ScrollView } from "react-native";
 import { XStack, YStack } from "tamagui";
 
 import { SectionHeader } from "@/components/home/shared/SectionHeader";
-import { Activity } from "@/components/home/types";
+import type { Activity } from "@/features/home/schemas/feed.schema";
 import { ActivityCard } from "./ActivityCard";
 
 type CurrentActivitiesSectionProps = {

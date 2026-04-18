@@ -1,8 +1,8 @@
-import {
+import type {
   Guide,
   TopRatedActivity,
   UpcomingActivity,
-} from "@/components/home/types";
+} from "@/features/home/schemas/feed.schema";
 
 export const upcomingActivities: UpcomingActivity[] = [
   {

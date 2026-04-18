@@ -2,6 +2,10 @@ import { z } from "zod";
 
 const chatTypeSchema = z.enum(["group", "private"]);
 
+export const chatIdParamsSchema = z.object({
+  id: z.uuid(),
+});
+
 export const chatSchema = z.object({
   id: z.uuid(),
   title: z.string().nullable(),
@@ -26,6 +30,5 @@ export const messageSchema = z.object({
 export const messagesSchema = z.array(messageSchema);
 
 export const sendMessageBodySchema = z.object({
-  senderId: z.uuid(),
-  content: z.string().min(1),
+  content: z.string().trim().min(1).max(2000),
 });

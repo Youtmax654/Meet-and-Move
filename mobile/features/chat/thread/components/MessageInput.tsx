@@ -55,7 +55,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
             borderWidth={0}
             backgroundColor="transparent"
             placeholder="Écrire un message..."
-            placeholderTextColor={"#8C8D8C" as any}
+            placeholderTextColor="$gray8"
             fontSize={14}
             color="#2E2F2F"
             focusStyle={{ outlineWidth: 0 }}

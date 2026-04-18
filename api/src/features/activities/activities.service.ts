@@ -9,10 +9,12 @@ import {
   users,
 } from "../../db/schema";
 import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
+import { activitySchema, joinedActivitiesSchema } from "./activities.schema";
 
-export const getActivityById = async (id: string) => {
-  const db = getDb();
-  try {
+const activitiesService = {
+  getActivityById: async (id: string) => {
+    const db = getDb();
+
     const result = await db
       .select({
         activity: activities,
@@ -32,10 +34,14 @@ export const getActivityById = async (id: string) => {
       .where(eq(activities.id, id))
       .limit(1);
 
-    if (result.length === 0) return null;
+    if (result.length === 0) {
+      return null;
+    }
 
     const row = result[0];
     const details = (row.activity.specificDetails as any) || {};
+    const normalizedCategory =
+      row.category?.id && row.category?.name ? row.category : null;
 
     // Récupérer la liste des participants acceptés
     const participantsListFiltered = await db
@@ -67,7 +73,7 @@ export const getActivityById = async (id: string) => {
 
     const chatId = chatResult.length > 0 ? chatResult[0].id : undefined;
 
-    return {
+    return activitySchema.parse({
       id: row.activity.id,
       title: row.activity.title,
       description: row.activity.description,
@@ -87,77 +93,71 @@ export const getActivityById = async (id: string) => {
         ...row.host,
         avatar: getAvatarUrl(row.host.id),
       },
-      category: row.category,
+      category: normalizedCategory,
       price_breakdown: details.price_breakdown || [],
       eventDate: row.activity.eventDate,
-    };
-  } catch (error) {
-    console.error("Drizzle Query Error:", error);
-    throw error;
-  }
-};
+    });
+  },
 
-export const joinActivity = async (
-  activityId: string,
-  userId: string,
-): Promise<{ success: boolean }> => {
-  const db = getDb();
+  joinActivity: async (
+    activityId: string,
+    userId: string,
+  ): Promise<{ success: boolean }> => {
+    const db = getDb();
 
-  const existing = await db
-    .select()
-    .from(activityParticipants)
-    .where(
-      and(
-        eq(activityParticipants.activityId, activityId),
-        eq(activityParticipants.userId, userId),
-      ),
-    )
-    .limit(1);
-
-  if (existing.length > 0) {
-    throw new Error("ALREADY_JOINED");
-  }
-
-  await db.insert(activityParticipants).values({
-    activityId,
-    userId,
-    status: "accepted",
-    joinedAt: new Date(),
-  });
-
-  // Associer l'utilisateur au chat de l'activité
-  const chatResult = await db
-    .select({ id: chats.id })
-    .from(chats)
-    .where(eq(chats.activityId, activityId))
-    .limit(1);
-
-  if (chatResult.length > 0) {
-    const chatId = chatResult[0].id;
-    // Vérifier s'il n'est pas déjà dans le chat
-    const existingMember = await db
+    const existing = await db
       .select()
-      .from(chatMembers)
+      .from(activityParticipants)
       .where(
-        and(eq(chatMembers.chatId, chatId), eq(chatMembers.userId, userId)),
+        and(
+          eq(activityParticipants.activityId, activityId),
+          eq(activityParticipants.userId, userId),
+        ),
       )
       .limit(1);
 
-    if (existingMember.length === 0) {
-      await db.insert(chatMembers).values({
-        chatId,
-        userId,
-        joinedAt: new Date(),
-      });
+    if (existing.length > 0) {
+      throw new Error("ALREADY_JOINED");
     }
-  }
 
-  return { success: true };
-};
+    await db.insert(activityParticipants).values({
+      activityId,
+      userId,
+      status: "accepted",
+      joinedAt: new Date(),
+    });
 
-export const getUserJoinedActivities = async (userId: string) => {
-  const db = getDb();
-  try {
+    const chatResult = await db
+      .select({ id: chats.id })
+      .from(chats)
+      .where(eq(chats.activityId, activityId))
+      .limit(1);
+
+    if (chatResult.length > 0) {
+      const chatId = chatResult[0].id;
+      const existingMember = await db
+        .select()
+        .from(chatMembers)
+        .where(
+          and(eq(chatMembers.chatId, chatId), eq(chatMembers.userId, userId)),
+        )
+        .limit(1);
+
+      if (existingMember.length === 0) {
+        await db.insert(chatMembers).values({
+          chatId,
+          userId,
+          joinedAt: new Date(),
+        });
+      }
+    }
+
+    return { success: true };
+  },
+
+  getUserJoinedActivities: async (userId: string) => {
+    const db = getDb();
+
     const result = await db
       .select({
         activity: activities,
@@ -181,7 +181,7 @@ export const getUserJoinedActivities = async (userId: string) => {
         ),
       );
 
-    return await Promise.all(
+    const joinedActivities = await Promise.all(
       result.map(async (row) => {
         const details = (row.activity.specificDetails as any) || {};
 
@@ -202,6 +202,8 @@ export const getUserJoinedActivities = async (userId: string) => {
           .limit(1);
 
         const chatId = chatResult.length > 0 ? chatResult[0].id : undefined;
+        const normalizedCategory =
+          row.category?.id && row.category?.name ? row.category : null;
 
         return {
           id: row.activity.id,
@@ -213,7 +215,7 @@ export const getUserJoinedActivities = async (userId: string) => {
           max_participants: row.activity.maxParticipants,
           enrolledCount: participantsList.length,
           host: row.host,
-          category: row.category,
+          category: normalizedCategory,
           eventDate: row.activity.eventDate,
           coverImage:
             details.coverImage ||
@@ -223,8 +225,8 @@ export const getUserJoinedActivities = async (userId: string) => {
         };
       }),
     );
-  } catch (error) {
-    console.error("Error fetching user joined activities:", error);
-    throw error;
-  }
+    return joinedActivitiesSchema.parse(joinedActivities);
+  },
 };
+
+export default activitiesService;

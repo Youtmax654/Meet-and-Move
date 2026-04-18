@@ -5,7 +5,7 @@ import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 
 import { AvatarGroup } from "@/components/home/activities/AvatarGroup";
-import { Activity } from "@/components/home/types";
+import type { Activity } from "@/features/home/schemas/feed.schema";
 
 type ActivityCardProps = {
   activity: Activity;
@@ -90,7 +90,8 @@ export function ActivityCard({ activity }: ActivityCardProps) {
           >
             <AvatarGroup avatars={activity.avatars} extra={activity.extra} />
             <Text fontSize={18} fontWeight="800" color="#4953AC">
-              {activity.price}{!String(activity.price).includes("€") ? "€" : ""}
+              {activity.price}
+              {!String(activity.price).includes("€") ? "€" : ""}
             </Text>
           </XStack>
         </YStack>

@@ -3,7 +3,7 @@ import { XStack, YStack } from "tamagui";
 
 import { ActivityCard } from "@/components/home/activities/ActivityCard";
 import { SectionHeader } from "@/components/home/shared/SectionHeader";
-import { Activity } from "@/components/home/types";
+import type { Activity } from "@/features/home/schemas/feed.schema";
 
 type ActivitiesSectionProps = {
   activities: Activity[];

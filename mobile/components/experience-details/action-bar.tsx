@@ -1,12 +1,13 @@
-import { api, getUserId } from "@/lib/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Button, Spinner, Text, View, XStack } from "tamagui";
+import { api, getUserId } from "@/lib/api";
 import { useToast } from "../../context/toast-context";
 import { INBOX_QUERY_KEY } from "../../features/chat/inbox/hooks/use-inbox";
-import { Activity } from "../../types/activity";
+import type { Activity } from "../../types/activity";
 
 export function ActionBar({ activity }: { activity?: Activity }) {
   const router = useRouter();
@@ -42,7 +43,7 @@ export function ActionBar({ activity }: { activity?: Activity }) {
 
     try {
       setLoading(true);
-      const response = await api.post(`/activities/${activity.id}/join`);
+      await api.post(`/activities/${activity.id}/join`);
       await queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
       showToast(
         `Bravo ! Tu as rejoint l'activité "${activity.title}"`,
@@ -52,20 +53,26 @@ export function ActionBar({ activity }: { activity?: Activity }) {
       setTimeout(() => {
         router.replace("/(tabs)");
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Join error:", error);
-      if (error.response?.status === 401) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
         showToast(
           "Sélectionne d'abord un utilisateur dans le menu de debug (icône bug) !",
           "error",
         );
       } else {
-        showToast(
-          error.response?.data?.error ||
-            error.message ||
-            "Une erreur est survenue",
-          "error",
-        );
+        const fallbackMessage =
+          error instanceof Error ? error.message : "Une erreur est survenue";
+        const apiMessage =
+          error instanceof AxiosError &&
+          typeof error.response?.data === "object" &&
+          error.response?.data !== null &&
+          "error" in error.response.data &&
+          typeof (error.response.data as { error?: unknown }).error === "string"
+            ? (error.response.data as { error: string }).error
+            : null;
+
+        showToast(apiMessage ?? fallbackMessage, "error");
       }
     } finally {
       setLoading(false);

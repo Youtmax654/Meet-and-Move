@@ -11,11 +11,17 @@ import {
 import { Button, Text, View, XStack, YStack } from "tamagui";
 import { api } from "../../lib/api";
 
-// TODO: To replace with a reel authentication (better auth)
+type DebugUser = {
+  id: string;
+  username: string;
+  email: string;
+};
+
+// TODO: To replace with a real authentication flow.
 export function DebugUserPicker() {
-  const [activeUser, setActiveUser] = useState<any | null>(null);
+  const [activeUser, setActiveUser] = useState<DebugUser | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<DebugUser[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -41,22 +47,22 @@ export function DebugUserPicker() {
   }, [users]);
 
   useEffect(() => {
-    if (users.length === 0) {
-      setLoading(true);
-      api
-        .get("/auth/dev/users")
-        .then((res) => {
-          setUsers(res.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Failed to load users", err);
-          setLoading(false);
-        });
-    }
-  }, []);
+    if (users.length > 0) return;
 
-  const selectUser = async (u: any | null) => {
+    setLoading(true);
+    api
+      .get("/auth/dev/users")
+      .then((res) => {
+        setUsers(res.data as DebugUser[]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load users", err);
+        setLoading(false);
+      });
+  }, [users.length]);
+
+  const selectUser = async (u: DebugUser | null) => {
     setActiveUser(u);
     setIsOpen(false);
 

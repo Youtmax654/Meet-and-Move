@@ -1,18 +1,20 @@
 import { Context } from "hono";
-import {
-  getActivityById,
-  getUserJoinedActivities,
-  joinActivity,
-} from "./activities.service";
+import { activityIdParamsSchema } from "./activities.schema";
+import activitiesService from "./activities.service";
 
 export const getActivity = async (c: Context) => {
-  const id = c.req.param("id");
-  if (!id) {
-    return c.json({ error: "Missing ID" }, 400);
+  const paramsParsed = activityIdParamsSchema.safeParse(c.req.param());
+  if (!paramsParsed.success) {
+    return c.json(
+      { error: "Invalid params", details: paramsParsed.error.issues },
+      400,
+    );
   }
 
+  const { id } = paramsParsed.data;
+
   try {
-    const activity = await getActivityById(id);
+    const activity = await activitiesService.getActivityById(id);
 
     if (!activity) {
       return c.json({ error: "Activity not found" }, 404);
@@ -25,16 +27,25 @@ export const getActivity = async (c: Context) => {
   }
 };
 
-export const handleJoinActivity = async (c: Context) => {
-  const activityId = c.req.param("id");
-  const userId = c.get("userId");
-
-  if (!activityId || !userId) {
-    return c.json({ error: "Missing activityId or userId" }, 400);
+export const joinActivity = async (c: Context) => {
+  const paramsParsed = activityIdParamsSchema.safeParse(c.req.param());
+  if (!paramsParsed.success) {
+    return c.json(
+      { error: "Invalid params", details: paramsParsed.error.issues },
+      400,
+    );
   }
 
+  const userId = c.get("userId");
+
+  if (!userId) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { id: activityId } = paramsParsed.data;
+
   try {
-    const result = await joinActivity(activityId, userId);
+    const result = await activitiesService.joinActivity(activityId, userId);
     return c.json(result);
   } catch (error: any) {
     if (error.message === "ALREADY_JOINED" || error.code === "23505") {
@@ -48,15 +59,15 @@ export const handleJoinActivity = async (c: Context) => {
   }
 };
 
-export const handleGetJoinedActivities = async (c: Context) => {
+export const getJoinedActivities = async (c: Context) => {
   const userId = c.get("userId");
 
   if (!userId) {
-    return c.json({ error: "Missing userId" }, 400);
+    return c.json({ error: "Unauthorized" }, 401);
   }
 
   try {
-    const activities = await getUserJoinedActivities(userId);
+    const activities = await activitiesService.getUserJoinedActivities(userId);
     return c.json(activities);
   } catch (error) {
     console.error("Error fetching user joined activities:", error);

@@ -43,7 +43,7 @@ export default function ChatScreen() {
           }
         />
 
-        <MessageList messages={messages ?? []} chatDetails={chatDetails} />
+        <MessageList messages={messages ?? []} />
 
         <MessageInput onSend={sendMessage} />
       </YStack>

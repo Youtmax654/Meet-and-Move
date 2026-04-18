@@ -1,14 +1,21 @@
+import { useQuery } from "@tanstack/react-query";
 import { ActivityIndicator, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, YStack } from "tamagui";
-
 import { ActivitiesSection } from "@/components/home/activities/ActivitiesSection";
 import { HomeSearchBar } from "@/components/home/layout/HomeSearchBar";
 import { HomeTopRow } from "@/components/home/layout/HomeTopRow";
-import { useHomeData } from "@/hooks/useHomeData";
+import { homeFeedSchema } from "@/features/home/schemas/feed.schema";
+import { api } from "@/lib/api";
 
 export function HomeScreen() {
-  const { activities, loading } = useHomeData();
+  const { data: activities, isLoading } = useQuery({
+    queryKey: ["home-feed"],
+    queryFn: async () => {
+      const response = await api.get("/feed");
+      return homeFeedSchema.parse(response.data);
+    },
+  });
 
   return (
     <SafeAreaView
@@ -41,7 +48,7 @@ export function HomeScreen() {
 
           <HomeSearchBar />
 
-          {loading ? (
+          {isLoading ? (
             <YStack
               alignItems="center"
               justifyContent="center"
@@ -52,7 +59,7 @@ export function HomeScreen() {
                 Chargement des données...
               </Text>
             </YStack>
-          ) : activities.length === 0 ? (
+          ) : !activities || activities.length === 0 ? (
             <YStack
               alignItems="center"
               justifyContent="center"

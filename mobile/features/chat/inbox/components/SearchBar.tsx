@@ -19,7 +19,7 @@ export function SearchBar() {
         borderWidth={0}
         color="#000"
         placeholder="Search chats or squads..."
-        placeholderTextColor={"#ADADAC" as any}
+        placeholderTextColor="$gray8"
         focusStyle={{ borderWidth: 0, outlineWidth: 0 }}
       />
     </XStack>

@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator } from "react-native";
 import { ScrollView, Text, YStack } from "tamagui";
+import { formatShortFrenchDate } from "@/lib/date";
 import { useInbox } from "../hooks/use-inbox";
 import { InboxItem } from "./InboxItem";
 
@@ -53,13 +54,7 @@ export function InboxList() {
               type: chat.type === "group" ? "squad" : "individual",
               name: chat.title || "Conversation sans titre",
               message: chat.lastMessage || "Dernier message non disponible",
-              time: new Date(chat.lastMessageSentAt || "").toLocaleDateString(
-                "fr-FR",
-                {
-                  day: "2-digit",
-                  month: "short",
-                },
-              ),
+              time: formatShortFrenchDate(chat.lastMessageSentAt),
               unreadCount: 0,
               online: false,
               archived: false,

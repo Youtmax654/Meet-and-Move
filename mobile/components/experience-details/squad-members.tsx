@@ -10,7 +10,7 @@ export function SquadMembers({ activity }: { activity?: Activity }) {
     <YStack backgroundColor="#F1F1F0" borderRadius={12} p={24} gap={24} mb={32}>
       <XStack justify="space-between" alignItems="center">
         <Text fontSize={18} fontWeight="700" color="#2E2F2F">
-          L'Équipe
+          L&apos;Équipe
         </Text>
         <Text fontSize={14} fontWeight="500" color="#4953AC">
           {enrolledCount}/{maxParticipants} Inscrits

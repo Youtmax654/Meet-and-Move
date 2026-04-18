@@ -131,12 +131,10 @@ export function useChatSse(chatId: string) {
         });
       } catch (error) {
         // Rollback cache if network request fails
-        if (previousMessages) {
-          queryClient.setQueryData<Message[]>(
-            THREAD_QUERY_KEY(chatId),
-            previousMessages,
-          );
-        }
+        queryClient.setQueryData<Message[]>(
+          THREAD_QUERY_KEY(chatId),
+          previousMessages ?? [],
+        );
         console.error("Failed to publish message:", error);
         throw error;
       }

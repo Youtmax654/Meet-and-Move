@@ -60,6 +60,5 @@ app.route("/auth", authRoute);
 app.route("/activities", activitiesRoute);
 app.route("/feed", feedRoute);
 app.route("/chats", chatsRoute);
-app.route("/activities", activitiesRoute);
 
 export default app;

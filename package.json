@@ -19,7 +19,7 @@
     "db:stop": "cd db && docker compose down",
     "db:prune": "cd db && docker compose down -v",
     "start": "mprocs",
-    "install": "concurrently \"cd mobile && npm install\" \"cd api && npm install\" --names \"mobile\",\"api\""
+    "install": "concurrently \"cd mobile && npm install --color=always\" \"cd api && npm install --color=always\" --names \"mobile\",\"api\" -c auto"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

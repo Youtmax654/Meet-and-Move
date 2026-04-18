@@ -1,10 +1,10 @@
-import { Context } from 'hono';
-import { getAllActivities as fetchAllActivities, getGuides as fetchGuides } from './feed.service';
-import { mapActivityToCard } from './activities.mapper';
+import { Context } from "hono";
+import { mapActivityToCard } from "./activities.mapper";
+import feedService from "./feed.service";
 
 export const getAllActivities = async (c: Context) => {
   try {
-    const activities = await fetchAllActivities();
+    const activities = await feedService.getAllActivities();
 
     if (!activities || activities.length === 0) {
       return c.json([], 200);
@@ -20,7 +20,7 @@ export const getAllActivities = async (c: Context) => {
 
 export const getGuides = async (c: Context) => {
   try {
-    const guides = await fetchGuides();
+    const guides = await feedService.getGuides();
     return c.json(guides || []);
   } catch (error) {
     console.error("Error fetching guides:", error);

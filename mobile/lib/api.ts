@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
@@ -23,11 +23,15 @@ api.interceptors.request.use(async (config) => {
     }
 
     if (debugUserId) {
-      config.headers = config.headers || Object.assign({});
-      if (typeof config.headers.set === "function") {
+      if (!config.headers) {
+        config.headers = new AxiosHeaders();
+      }
+
+      if (config.headers instanceof AxiosHeaders) {
         config.headers.set("X-Debug-User-Id", debugUserId);
       } else {
-        (config.headers as any)["X-Debug-User-Id"] = debugUserId;
+        const headers = config.headers as Record<string, string>;
+        headers["X-Debug-User-Id"] = debugUserId;
       }
     }
   } catch (error) {

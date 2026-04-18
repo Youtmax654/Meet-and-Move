@@ -7,11 +7,12 @@ import {
   userInterests,
   users,
 } from "../../db/schema";
+import { feedActivitiesSchema, feedGuidesSchema } from "./feed.schema";
 
-export const getAllActivities = async () => {
-  const db = getDb();
+const feedService = {
+  getAllActivities: async () => {
+    const db = getDb();
 
-  try {
     const result = await db
       .select({
         activity: activities,
@@ -31,9 +32,10 @@ export const getAllActivities = async () => {
       .leftJoin(interests, eq(activities.categoryId, interests.id))
       .orderBy(activities.createdAt);
 
-    if (result.length === 0) return [];
+    if (result.length === 0) {
+      return [];
+    }
 
-    // Fetch all accepted participants for these activities to build avatars
     const allParticipants = await db
       .select({
         activityId: activityParticipants.activityId,
@@ -58,9 +60,11 @@ export const getAllActivities = async () => {
       });
     });
 
-    return result.map((row) => {
+    const activitiesList = result.map((row) => {
       const details = (row.activity.specificDetails as any) || {};
       const participants = participantsByActivity[row.activity.id] || [];
+      const normalizedCategory =
+        row.category?.id && row.category?.name ? row.category : null;
 
       return {
         id: row.activity.id,
@@ -77,21 +81,17 @@ export const getAllActivities = async () => {
         enrolledCount: participants.length,
         participants: participants,
         host: row.host,
-        category: row.category,
+        category: normalizedCategory,
         image: details.image,
         price_breakdown: details.price_breakdown || [],
       };
     });
-  } catch (error) {
-    console.error("Drizzle Feed Activities Error:", error);
-    throw error;
-  }
-};
+    return feedActivitiesSchema.parse(activitiesList);
+  },
 
-export const getGuides = async () => {
-  const db = getDb();
+  getGuides: async () => {
+    const db = getDb();
 
-  try {
     const result = await db
       .select({
         id: users.id,
@@ -106,15 +106,15 @@ export const getGuides = async () => {
       .where(eq(users.role, "pro_guide"))
       .groupBy(users.id, users.username, users.bio, users.isVerified);
 
-    return result.map((g) => ({
+    const guides = result.map((g) => ({
       id: g.id,
       name: g.username,
       details: g.interests ? `Expert en : ${g.interests}` : g.bio || "",
       image: `https://i.pravatar.cc/150?u=${g.id}`,
       isVerified: g.isVerified,
     }));
-  } catch (error) {
-    console.error("Drizzle Feed Guides Error:", error);
-    throw error;
-  }
+    return feedGuidesSchema.parse(guides);
+  },
 };
+
+export default feedService;

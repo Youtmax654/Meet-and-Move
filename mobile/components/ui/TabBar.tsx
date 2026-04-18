@@ -5,24 +5,34 @@ import React from "react";
 import { Pressable } from "react-native";
 import { Text, View, XStack, YStack } from "tamagui";
 
-export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
+
+const outlineIconMap: Partial<Record<IconName, IconName>> = {
+  compass: "compass-outline",
+  layers: "layers-outline",
+  "chatbubble-ellipses": "chatbubble-ellipses-outline",
+  person: "person-outline",
+  ellipse: "ellipse-outline",
+};
+
+export function TabBar({ state, navigation }: BottomTabBarProps) {
   // Use mapping to define icons for different tabs
   // Expo Router uses route names like 'index', 'activities', 'messages', 'profil'
   const getRouteInfo = (routeName: string) => {
     switch (routeName) {
       case "index":
-        return { icon: "compass", label: "Explorer" };
+        return { icon: "compass" as IconName, label: "Explorer" };
       case "activities":
-        return { icon: "layers", label: "Activités" };
+        return { icon: "layers" as IconName, label: "Activités" };
       case "chats":
-        return { icon: "chatbubble-ellipses", label: "Messages" };
+        return { icon: "chatbubble-ellipses" as IconName, label: "Messages" };
       case "profil":
-        return { icon: "person", label: "Profil" };
+        return { icon: "person" as IconName, label: "Profil" };
       default:
         // fallback to explore if 'explore' route exists
         if (routeName === "explore")
-          return { icon: "compass", label: "Explorer" };
-        return { icon: "ellipse", label: routeName };
+          return { icon: "compass" as IconName, label: "Explorer" };
+        return { icon: "ellipse" as IconName, label: routeName };
     }
   };
 
@@ -59,7 +69,6 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           gap={10}
         >
           {state.routes.map((route, index) => {
-            const { options } = descriptors[route.key];
             const isFocused = state.index === index;
 
             const onPress = () => {
@@ -75,6 +84,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             };
 
             const { icon, label } = getRouteInfo(route.name);
+            const iconName = isFocused ? icon : (outlineIconMap[icon] ?? icon);
 
             return (
               <Pressable
@@ -97,9 +107,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                   gap={4}
                 >
                   <Ionicons
-                    name={
-                      isFocused ? (icon as any) : (`${icon}-outline` as any)
-                    }
+                    name={iconName}
                     size={24}
                     color={isFocused ? "#4953AC" : "#64748B"}
                   />
