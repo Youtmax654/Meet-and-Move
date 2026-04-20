@@ -1,27 +1,76 @@
-import { z } from 'zod';
+import { z } from "zod";
+
+export const activityIdParamsSchema = z.object({
+  id: z.uuid(),
+});
 
 export const activitySchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string(),
-  description: z.string(),
-  price: z.number().optional(),
-  difficulty: z.string().optional(),
-  duration_hours: z.number().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  max_participants: z.number().optional(),
+  description: z.string().nullable(),
+  image: z.string().optional(),
+  price: z.number().nonnegative().nullable().optional(),
+  difficulty: z.string().nullable().optional(),
+  duration_hours: z.number().nullable().optional(),
+  latitude: z.union([z.number().min(-90).max(90), z.string()]).nullable(),
+  longitude: z.union([z.number().min(-180).max(180), z.string()]).nullable(),
+  max_participants: z.number().int().positive().nullable(),
+  enrolledCount: z.number(),
+  participants: z.array(
+    z.object({
+      id: z.uuid(),
+      username: z.string(),
+      avatar: z.string(),
+    }),
+  ),
+  chatId: z.uuid().optional(),
   host: z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     username: z.string(),
-    bio: z.string().optional(),
-  }).optional(),
-  category: z.object({
-    id: z.string().uuid(),
-    name: z.string(),
-  }).optional(),
-  price_breakdown: z.array(z.object({
-    label: z.string(),
-    amount: z.number(),
-    color: z.string(),
-  })).optional(),
+    bio: z.string().nullable(),
+    avatar: z.string(),
+  }),
+  category: z
+    .object({
+      id: z.uuid(),
+      name: z.string(),
+    })
+    .nullable(),
+  price_breakdown: z
+    .array(
+      z.object({
+        label: z.string(),
+        amount: z.number(),
+        color: z.string(),
+      }),
+    )
+    .default([]),
+  eventDate: z.coerce.date().nullable(),
 });
+
+export const joinedActivitySchema = z.object({
+  id: z.uuid(),
+  title: z.string(),
+  description: z.string().nullable(),
+  price: z.number().nonnegative().nullable().optional(),
+  latitude: z.union([z.number().min(-90).max(90), z.string()]).nullable(),
+  longitude: z.union([z.number().min(-180).max(180), z.string()]).nullable(),
+  max_participants: z.number().int().positive().nullable(),
+  enrolledCount: z.number(),
+  host: z.object({
+    id: z.uuid(),
+    username: z.string(),
+  }),
+  category: z
+    .object({
+      id: z.uuid(),
+      name: z.string(),
+    })
+    .nullable(),
+  eventDate: z.coerce.date().nullable(),
+  coverImage: z.string(),
+  locationCity: z.string(),
+  chatId: z.uuid().optional(),
+});
+
+export const joinedActivitiesSchema = z.array(joinedActivitySchema);

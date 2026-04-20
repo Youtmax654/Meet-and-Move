@@ -8,6 +8,7 @@ export interface Activity {
   id: string;
   title: string;
   description: string;
+  image?: string;
   price?: number;
   difficulty?: string;
   duration_hours?: number;
@@ -15,14 +16,16 @@ export interface Activity {
   longitude?: number;
   max_participants?: number;
   enrolledCount?: number;
-  participants?: Array<{
+  participants?: {
     id: string;
     username: string;
-  }>;
+    avatar?: string;
+  }[];
   host?: {
     id: string;
     username: string;
     bio?: string;
+    avatar?: string;
   };
   category?: {
     id: string;
@@ -30,4 +33,5 @@ export interface Activity {
   };
   price_breakdown?: PriceBreakdownItem[];
   eventDate?: string;
+  chatId?: string;
 }

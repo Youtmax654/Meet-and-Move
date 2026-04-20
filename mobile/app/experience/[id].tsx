@@ -1,65 +1,65 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, View, XStack } from "tamagui";
-import { Activity } from "../../types/activity";
 
-import { ActionBar } from "../../components/experience-details/action-bar";
+import { ActionBar } from "@/components/experience-details/action-bar";
+import { activityDetailsSchema } from "@/features/experience/schemas/activity-details.schema";
+import { api } from "@/lib/api";
 import { ExperienceDescription } from "../../components/experience-details/experience-description";
 import { ExperienceHeader } from "../../components/experience-details/experience-header";
 import { HeroSection } from "../../components/experience-details/hero-section";
 import { PriceBreakdown } from "../../components/experience-details/price-breakdown";
 import { SquadMembers } from "../../components/experience-details/squad-members";
 import { NotFoundError } from "../../components/ui/not-found-error";
+import type { Activity } from "../../types/activity";
 
 export default function ExperienceDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = params.id as string;
 
-  const [activity, setActivity] = useState<Activity | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: activity,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Activity, unknown>({
+    queryKey: ["activity-details", id],
+    enabled: Boolean(id),
+    queryFn: async () => {
+      const response = await api.get(`/activities/${id}`);
+      return activityDetailsSchema.parse(response.data);
+    },
+  });
 
-  useEffect(() => {
-    async function fetchActivity() {
-      try {
-        setLoading(true);
-        const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-        const url = `${apiUrl}/activities/${id}`;
-        console.log(`Fetching activity from: ${url}`);
-        
-        const response = await fetch(url);
-        console.log("Response status:", response.status);
-
-        if (response.status === 404) {
-          throw new Error("Activité introuvable - 404");
-        }
-
-        if (!response.ok) {
-          const errorBody = await response.text();
-          console.error("Error response body:", errorBody);
-          throw new Error(`Échec du chargement (${response.status})`);
-        }
-        const data = await response.json();
-        console.log("Activity data loaded:", data.title);
-        setActivity(data);
-      } catch (err: any) {
-        console.error("Fetch error:", err);
-        setError(err.message || "Une erreur est survenue");
-      } finally {
-        setLoading(false);
-      }
+  const errorMessage = (() => {
+    if (!isError || !error) return null;
+    if (error instanceof AxiosError && error.response?.status === 404) {
+      return "Activité introuvable - 404";
     }
 
-    if (id) {
-      fetchActivity();
+    if (
+      error instanceof AxiosError &&
+      typeof error.response?.data === "object" &&
+      error.response?.data !== null &&
+      "error" in error.response.data &&
+      typeof (error.response.data as { error?: unknown }).error === "string"
+    ) {
+      return (error.response.data as { error: string }).error;
     }
-  }, [id]);
 
-  if (loading) {
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    return "Une erreur est survenue";
+  })();
+
+  if (isLoading) {
     return (
       <View
         flex={1}
@@ -72,11 +72,18 @@ export default function ExperienceDetailsScreen() {
     );
   }
 
-  if (error || !activity) {
+  if (isError || !activity) {
     return (
-      <NotFoundError 
-        title={error?.includes("404") ? "Activité introuvable" : "Erreur de chargement"}
-        message={error || "L'activité que tu cherches n'existe pas ou a été supprimée."}
+      <NotFoundError
+        title={
+          errorMessage?.includes("404")
+            ? "Activité introuvable"
+            : "Erreur de chargement"
+        }
+        message={
+          errorMessage ||
+          "L'activité que tu cherches n'existe pas ou a été supprimée."
+        }
         buttonText="Retour"
         onPress={() => router.back()}
       />

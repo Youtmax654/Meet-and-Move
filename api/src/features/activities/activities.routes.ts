@@ -1,10 +1,14 @@
-import { Hono } from 'hono';
-import { getActivity } from './activities.controller';
+import { Hono } from "hono";
+import {
+  getActivity,
+  getJoinedActivities,
+  joinActivity,
+} from "./activities.controller";
 
 const activitiesRoute = new Hono();
 
-activitiesRoute.get('/:id', getActivity);
-
-// You can add more routes here (e.g., POST /, GET /, etc.)
+activitiesRoute.get("/joined", getJoinedActivities);
+activitiesRoute.get("/:id", getActivity);
+activitiesRoute.post("/:id/join", joinActivity);
 
 export default activitiesRoute;

@@ -10,7 +10,7 @@ export function SquadMembers({ activity }: { activity?: Activity }) {
     <YStack backgroundColor="#F1F1F0" borderRadius={12} p={24} gap={24} mb={32}>
       <XStack justify="space-between" alignItems="center">
         <Text fontSize={18} fontWeight="700" color="#2E2F2F">
-          L'Équipe
+          L&apos;Équipe
         </Text>
         <Text fontSize={14} fontWeight="500" color="#4953AC">
           {enrolledCount}/{maxParticipants} Inscrits
@@ -21,7 +21,7 @@ export function SquadMembers({ activity }: { activity?: Activity }) {
         {/* Hôte */}
         <YStack alignItems="center" gap={8} width={70}>
           <Avatar circular size={56} borderColor="#006666" borderWidth={2}>
-            <Avatar.Image src={`https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`} />
+            <Avatar.Image src={activity?.host?.avatar || `https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`} />
             <Avatar.Fallback backgroundColor="#006666" />
           </Avatar>
           <YStack alignItems="center">
@@ -38,7 +38,7 @@ export function SquadMembers({ activity }: { activity?: Activity }) {
         {activity?.participants?.filter(p => p.id !== activity?.host?.id).map((participant) => (
           <YStack key={participant.id} alignItems="center" gap={8} width={70}>
             <Avatar circular size={56}>
-              <Avatar.Image src={`https://i.pravatar.cc/150?u=${participant.id}`} />
+              <Avatar.Image src={participant.avatar || `https://i.pravatar.cc/150?u=${participant.id}`} />
               <Avatar.Fallback backgroundColor="#ADADAC" />
             </Avatar>
             <Text fontSize={12} fontWeight="400" color="#2E2F2F" textAlign="center" numberOfLines={1}>
