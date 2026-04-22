@@ -9,7 +9,13 @@ import {
   users,
 } from "../../db/schema";
 import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
-import { activitySchema, joinedActivitiesSchema } from "./activities.schema";
+import {
+  activitySchema,
+  createActivityBodySchema,
+  joinedActivitiesSchema,
+  updateActivityBodySchema,
+} from "./activities.schema";
+import type { z } from "zod";
 
 const activitiesService = {
   getActivityById: async (id: string) => {
@@ -78,6 +84,8 @@ const activitiesService = {
       title: row.activity.title,
       description: row.activity.description,
       image:
+        details.coverImage ||
+        details.photos?.[0] ||
         details.image ||
         getActivityImageUrl(row.category?.name || undefined, row.activity.id),
       price: details.price,
@@ -95,6 +103,11 @@ const activitiesService = {
       },
       category: normalizedCategory,
       price_breakdown: details.price_breakdown || [],
+      tags: details.tags || [],
+      photos: details.photos || [],
+      coverImage: details.coverImage ?? null,
+      locationCity: details.locationCity ?? null,
+      address: details.address ?? null,
       eventDate: row.activity.eventDate,
     });
   },
@@ -226,6 +239,113 @@ const activitiesService = {
       }),
     );
     return joinedActivitiesSchema.parse(joinedActivities);
+  },
+
+  createActivity: async (
+    hostId: string,
+    input: z.infer<typeof createActivityBodySchema>,
+  ) => {
+    const db = getDb();
+
+    const totalPrice = (input.pricePerPerson ?? 0) + (input.fees ?? 0);
+
+    const specificDetails = {
+      price: totalPrice,
+      price_breakdown: input.priceBreakdown ?? [],
+      tags: input.tags ?? [],
+      photos: input.photos ?? [],
+      coverImage: input.coverImage ?? input.photos?.[0] ?? null,
+      image: input.coverImage ?? input.photos?.[0] ?? null,
+      locationCity: input.locationCity ?? null,
+      address: input.address ?? null,
+    };
+
+    const inserted = await db
+      .insert(activities)
+      .values({
+        hostId,
+        title: input.title,
+        description: input.description ?? null,
+        categoryId: input.categoryId,
+        maxParticipants: input.maxParticipants,
+        latitude: input.latitude?.toString() ?? null,
+        longitude: input.longitude?.toString() ?? null,
+        specificDetails,
+        autoValidate: true,
+      })
+      .returning({ id: activities.id });
+
+    return { id: inserted[0]?.id };
+  },
+
+  updateActivity: async (
+    activityId: string,
+    userId: string,
+    input: z.infer<typeof updateActivityBodySchema>,
+  ) => {
+    const db = getDb();
+
+    const existing = await db
+      .select({ hostId: activities.hostId, specificDetails: activities.specificDetails })
+      .from(activities)
+      .where(eq(activities.id, activityId))
+      .limit(1);
+
+    if (existing.length === 0) {
+      return { ok: false as const, reason: "NOT_FOUND" as const };
+    }
+
+    if (existing[0].hostId !== userId) {
+      return { ok: false as const, reason: "FORBIDDEN" as const };
+    }
+
+    const currentDetails = (existing[0].specificDetails as any) || {};
+
+    const pricePerPerson = input.pricePerPerson ?? 0;
+    const fees = input.fees ?? 0;
+    const totalPrice = pricePerPerson + fees;
+    const nextPhotos = typeof input.photos !== "undefined" ? input.photos : currentDetails.photos;
+    const nextCoverImage =
+      typeof input.coverImage !== "undefined"
+        ? input.coverImage ?? input.photos?.[0] ?? null
+        : currentDetails.coverImage ?? nextPhotos?.[0] ?? null;
+
+    const mergedDetails = {
+      ...currentDetails,
+      ...(typeof input.tags !== "undefined" ? { tags: input.tags } : {}),
+      ...(typeof input.photos !== "undefined" ? { photos: nextPhotos } : {}),
+      ...(typeof input.coverImage !== "undefined" ? { coverImage: nextCoverImage } : {}),
+      ...(typeof input.coverImage !== "undefined" || typeof input.photos !== "undefined"
+        ? { image: nextCoverImage }
+        : {}),
+      ...(typeof input.locationCity !== "undefined" ? { locationCity: input.locationCity } : {}),
+      ...(typeof input.address !== "undefined" ? { address: input.address } : {}),
+      ...(typeof input.priceBreakdown !== "undefined" ? { price_breakdown: input.priceBreakdown } : {}),
+      ...(typeof input.pricePerPerson !== "undefined" || typeof input.fees !== "undefined"
+        ? { price: totalPrice }
+        : {}),
+    };
+
+    await db
+      .update(activities)
+      .set({
+        ...(typeof input.title !== "undefined" ? { title: input.title } : {}),
+        ...(typeof input.description !== "undefined" ? { description: input.description } : {}),
+        ...(typeof input.categoryId !== "undefined" ? { categoryId: input.categoryId } : {}),
+        ...(typeof input.maxParticipants !== "undefined"
+          ? { maxParticipants: input.maxParticipants }
+          : {}),
+        ...(typeof input.latitude !== "undefined"
+          ? { latitude: input.latitude?.toString() ?? null }
+          : {}),
+        ...(typeof input.longitude !== "undefined"
+          ? { longitude: input.longitude?.toString() ?? null }
+          : {}),
+        specificDetails: mergedDetails,
+      })
+      .where(eq(activities.id, activityId));
+
+    return { ok: true as const };
   },
 };
 

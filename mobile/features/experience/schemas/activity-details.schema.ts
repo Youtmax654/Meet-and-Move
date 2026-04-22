@@ -40,6 +40,11 @@ export const activityDetailsSchema = z.object({
   host: hostSchema.optional(),
   category: categorySchema.optional(),
   price_breakdown: z.array(priceBreakdownItemSchema).optional(),
+  tags: z.array(z.string()).optional(),
+  photos: z.array(z.string()).optional(),
+  coverImage: z.string().optional().nullable(),
+  locationCity: z.string().optional(),
+  address: z.string().optional(),
   eventDate: z.string().optional(),
   chatId: z.string().optional(),
 });

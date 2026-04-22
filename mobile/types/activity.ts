@@ -32,6 +32,11 @@ export interface Activity {
     name: string;
   };
   price_breakdown?: PriceBreakdownItem[];
+  tags?: string[];
+  photos?: string[];
+  coverImage?: string | null;
+  locationCity?: string;
+  address?: string;
   eventDate?: string;
   chatId?: string;
 }
