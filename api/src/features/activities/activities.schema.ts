@@ -4,6 +4,37 @@ export const activityIdParamsSchema = z.object({
   id: z.uuid(),
 });
 
+export const createActivityBodySchema = z.object({
+  title: z.string().min(1),
+  description: z.string().nullable().optional(),
+  categoryId: z.uuid(),
+  tags: z.array(z.string()).default([]),
+  maxParticipants: z.number().int().positive(),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
+  locationCity: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  pricePerPerson: z.number().nonnegative().default(0),
+  fees: z.number().nonnegative().default(0),
+  priceBreakdown: z
+    .array(
+      z.object({
+        label: z.string(),
+        amount: z.number().nonnegative(),
+        color: z.string(),
+      }),
+    )
+    .default([]),
+  photos: z.array(z.string()).default([]),
+  coverImage: z.string().nullable().optional(),
+});
+
+export const updateActivityBodySchema = createActivityBodySchema.partial().extend({
+  title: z.string().min(1).optional(),
+  categoryId: z.uuid().optional(),
+  maxParticipants: z.number().int().positive().optional(),
+});
+
 export const activitySchema = z.object({
   id: z.uuid(),
   title: z.string(),
@@ -45,6 +76,11 @@ export const activitySchema = z.object({
       }),
     )
     .default([]),
+  tags: z.array(z.string()).default([]),
+  photos: z.array(z.string()).default([]),
+  coverImage: z.string().nullable().optional(),
+  locationCity: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
   eventDate: z.coerce.date().nullable(),
 });
 

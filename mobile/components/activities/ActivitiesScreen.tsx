@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, YStack } from "tamagui";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Button, Text, XStack, YStack } from "tamagui";
 
 import { TripTabs } from "@/components/activities/layout/TripTabs";
 import { MemoriesSection } from "@/components/activities/memories/MemoriesSection";
@@ -16,6 +18,7 @@ import { api } from "@/lib/api";
 
 export function ActivitiesScreen() {
 	const [activeTab, setActiveTab] = useState<TripStatus>("upcoming");
+	const router = useRouter();
 
 	const { data, isLoading, isError } = useQuery<JoinedActivity[]>({
 		queryKey: ["joined-activities"],
@@ -88,14 +91,18 @@ export function ActivitiesScreen() {
 				showsVerticalScrollIndicator={false}
 			>
 				<YStack>
-					<Text
-						fontSize={28}
-						color="#1E2228"
-						fontWeight="800"
-						marginBottom={24}
-					>
-						Mes Activités
-					</Text>
+					<XStack alignItems="center" justifyContent="space-between" marginBottom={24}>
+						<Text fontSize={28} color="#1E2228" fontWeight="800">
+							Mes Activités
+						</Text>
+						<Button
+							circular
+							size="$4"
+							backgroundColor="#006666"
+							icon={<Ionicons name="add" size={20} color="#FFFFFF" />}
+							onPress={() => router.push("/activities/new")}
+						/>
+					</XStack>
 
 					<TripTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
