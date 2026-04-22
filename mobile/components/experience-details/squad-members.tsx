@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Pressable } from "react-native";
 import { Avatar, Text, View, XStack, YStack } from "tamagui";
 import { Activity } from "../../types/activity";
 
 export function SquadMembers({ activity }: { activity?: Activity }) {
+  const router = useRouter();
   const enrolledCount = activity?.enrolledCount || 0;
   const maxParticipants = activity?.max_participants || 0;
 
@@ -19,32 +22,40 @@ export function SquadMembers({ activity }: { activity?: Activity }) {
 
       <XStack flexWrap="wrap" gap={16} justify="center">
         {/* Hôte */}
-        <YStack alignItems="center" gap={8} width={70}>
-          <Avatar circular size={56} borderColor="#006666" borderWidth={2}>
-            <Avatar.Image src={activity?.host?.avatar || `https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`} />
-            <Avatar.Fallback backgroundColor="#006666" />
-          </Avatar>
-          <YStack alignItems="center">
-            <Text fontSize={12} fontWeight="600" color="#2E2F2F" textAlign="center" numberOfLines={1}>
-              {activity?.host?.username || "Hôte"}
-            </Text>
-            <Text fontSize={10} fontWeight="400" color="#5B5C5B">
-              (Hôte)
-            </Text>
+        <Pressable
+          onPress={() => {
+            if (activity?.host?.id) router.push(`/user/${activity.host.id}` as any);
+          }}
+        >
+          <YStack alignItems="center" gap={8} width={70}>
+            <Avatar circular size={56} borderColor="#006666" borderWidth={2}>
+              <Avatar.Image src={activity?.host?.avatar || `https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`} />
+              <Avatar.Fallback backgroundColor="#006666" />
+            </Avatar>
+            <YStack alignItems="center">
+              <Text fontSize={12} fontWeight="600" color="#2E2F2F" textAlign="center" numberOfLines={1}>
+                {activity?.host?.username || "Hôte"}
+              </Text>
+              <Text fontSize={10} fontWeight="400" color="#5B5C5B">
+                (Hôte)
+              </Text>
+            </YStack>
           </YStack>
-        </YStack>
+        </Pressable>
 
         {/* Participants (Excluant l'hôte pour éviter les doublons si présent dans la liste) */}
         {activity?.participants?.filter(p => p.id !== activity?.host?.id).map((participant) => (
-          <YStack key={participant.id} alignItems="center" gap={8} width={70}>
-            <Avatar circular size={56}>
-              <Avatar.Image src={participant.avatar || `https://i.pravatar.cc/150?u=${participant.id}`} />
-              <Avatar.Fallback backgroundColor="#ADADAC" />
-            </Avatar>
-            <Text fontSize={12} fontWeight="400" color="#2E2F2F" textAlign="center" numberOfLines={1}>
-              {participant.username}
-            </Text>
-          </YStack>
+          <Pressable key={participant.id} onPress={() => router.push(`/user/${participant.id}` as any)}>
+            <YStack alignItems="center" gap={8} width={70}>
+              <Avatar circular size={56}>
+                <Avatar.Image src={participant.avatar || `https://i.pravatar.cc/150?u=${participant.id}`} />
+                <Avatar.Fallback backgroundColor="#ADADAC" />
+              </Avatar>
+              <Text fontSize={12} fontWeight="400" color="#2E2F2F" textAlign="center" numberOfLines={1}>
+                {participant.username}
+              </Text>
+            </YStack>
+          </Pressable>
         ))}
 
         {/* Bouton "Votre Place" si pas plein */}

@@ -2,15 +2,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, View, XStack } from "tamagui";
+import { Button, Text, View, XStack } from "tamagui";
 
 import { ActionBar } from "@/components/experience-details/action-bar";
 import { activityDetailsSchema } from "@/features/experience/schemas/activity-details.schema";
-import { api } from "@/lib/api";
+import { api, getUserId } from "@/lib/api";
 import { ExperienceDescription } from "../../components/experience-details/experience-description";
 import { ExperienceHeader } from "../../components/experience-details/experience-header";
+import { ActivityImagesCarousel } from "../../components/experience-details/activity-images-carousel";
 import { HeroSection } from "../../components/experience-details/hero-section";
 import { PriceBreakdown } from "../../components/experience-details/price-breakdown";
 import { SquadMembers } from "../../components/experience-details/squad-members";
@@ -21,6 +23,15 @@ export default function ExperienceDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = params.id as string;
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadUserId() {
+      const uid = await getUserId();
+      setCurrentUserId(uid);
+    }
+    loadUserId();
+  }, []);
 
   const {
     data: activity,
@@ -124,7 +135,17 @@ export default function ExperienceDetailsScreen() {
           <Text fontWeight="800" color="#006666" fontSize={16}>
             {activity.title}
           </Text>
-          <View width={40} />
+          {currentUserId && activity.host?.id === currentUserId ? (
+            <Button
+              circular
+              chromeless
+              size="$3"
+              onPress={() => router.push(`/experience/edit/${activity.id}`)}
+              icon={<Ionicons name="create-outline" size={20} color="#006666" />}
+            />
+          ) : (
+            <View width={40} />
+          )}
         </XStack>
 
         <ScrollView
@@ -133,6 +154,7 @@ export default function ExperienceDetailsScreen() {
         >
           <View px={24} pt="$4">
             <HeroSection activity={activity} />
+            <ActivityImagesCarousel activity={activity} />
             <ExperienceHeader activity={activity} />
             <ExperienceDescription activity={activity} />
             <SquadMembers activity={activity} />

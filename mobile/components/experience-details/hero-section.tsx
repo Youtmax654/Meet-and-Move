@@ -4,6 +4,12 @@ import { Text, View } from "tamagui";
 import { Activity } from "../../types/activity";
 
 export function HeroSection({ activity }: { activity?: Activity }) {
+  const heroImage =
+    activity?.coverImage ||
+    activity?.photos?.[0] ||
+    activity?.image ||
+    `https://loremflickr.com/800/600/nature?lock=${activity?.id ?? 1}`;
+
   return (
     <View
       position="relative"
@@ -14,11 +20,7 @@ export function HeroSection({ activity }: { activity?: Activity }) {
       backgroundColor="#E2E2E1"
     >
       <Image
-        source={{
-          uri:
-            activity?.image ||
-            `https://loremflickr.com/800/600/nature?lock=${activity?.id ?? 1}`,
-        }}
+        source={{ uri: heroImage }}
         style={{ width: "100%", height: "100%" }}
         contentFit="cover"
       />
