@@ -83,11 +83,11 @@ const activitiesService = {
       id: row.activity.id,
       title: row.activity.title,
       description: row.activity.description,
-      image:
-        details.coverImage ||
-        details.photos?.[0] ||
-        details.image ||
-        getActivityImageUrl(row.category?.name || undefined, row.activity.id),
+      image: getActivityImageUrl(
+        row.category?.name || undefined,
+        row.activity.id,
+        details.imageKey ?? details.imageUrl ?? details.coverImage ?? details.photos?.[0] ?? details.image ?? null,
+      ),
       price: details.price,
       difficulty: details.difficulty,
       duration_hours: details.duration_hours,
@@ -255,7 +255,9 @@ const activitiesService = {
       tags: input.tags ?? [],
       photos: input.photos ?? [],
       coverImage: input.coverImage ?? input.photos?.[0] ?? null,
-      image: input.coverImage ?? input.photos?.[0] ?? null,
+      // Rétrocompat: `image` existait déjà dans le JSONB; on y met désormais une *clé* MinIO si dispo.
+      image: input.imageKey ?? input.coverImage ?? input.photos?.[0] ?? null,
+      imageKey: input.imageKey ?? null,
       locationCity: input.locationCity ?? null,
       address: input.address ?? null,
     };
@@ -317,6 +319,13 @@ const activitiesService = {
       ...(typeof input.coverImage !== "undefined" ? { coverImage: nextCoverImage } : {}),
       ...(typeof input.coverImage !== "undefined" || typeof input.photos !== "undefined"
         ? { image: nextCoverImage }
+        : {}),
+      ...(typeof input.imageKey !== "undefined"
+        ? {
+            imageKey: input.imageKey ?? null,
+            // Rétrocompat: certains clients lisent encore `details.image`.
+            image: input.imageKey ?? null,
+          }
         : {}),
       ...(typeof input.locationCity !== "undefined" ? { locationCity: input.locationCity } : {}),
       ...(typeof input.address !== "undefined" ? { address: input.address } : {}),

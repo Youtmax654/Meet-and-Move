@@ -9,6 +9,7 @@ import activitiesRoute from "./features/activities/activities.routes";
 import authRoute from "./features/auth/auth.routes";
 import chatsRoute from "./features/chats/chats.routes";
 import feedRoute from "./features/feed/feed.route";
+import uploadsRoute from "./features/uploads/uploads.routes";
 import { authMiddleware } from "./middleware/auth";
 
 type AppEnv = {
@@ -58,6 +59,7 @@ app.get("/", (c) => {
 app.route("/auth", authRoute);
 
 app.route("/activities", activitiesRoute);
+app.route("/uploads", uploadsRoute);
 app.route("/feed", feedRoute);
 app.route("/chats", chatsRoute);
 

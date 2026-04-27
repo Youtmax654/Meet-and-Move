@@ -7,6 +7,7 @@ import {
   userInterests,
   users,
 } from "../../db/schema";
+import { getActivityImageUrl } from "../../utils/image";
 import { feedActivitiesSchema, feedGuidesSchema } from "./feed.schema";
 
 const feedService = {
@@ -82,7 +83,11 @@ const feedService = {
         participants: participants,
         host: row.host,
         category: normalizedCategory,
-        image: details.image,
+        image: getActivityImageUrl(
+          row.category?.name || undefined,
+          row.activity.id,
+          details.imageKey ?? details.imageUrl ?? details.image ?? null,
+        ),
         price_breakdown: details.price_breakdown || [],
       };
     });

@@ -27,6 +27,8 @@ export const createActivityBodySchema = z.object({
     .default([]),
   photos: z.array(z.string()).default([]),
   coverImage: z.string().nullable().optional(),
+  // Clé MinIO (S3) uniquement — on ne stocke jamais l'URL complète en base.
+  imageKey: z.string().min(1).optional(),
 });
 
 export const updateActivityBodySchema = createActivityBodySchema.partial().extend({
