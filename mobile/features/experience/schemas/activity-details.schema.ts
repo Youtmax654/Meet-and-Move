@@ -32,8 +32,14 @@ export const activityDetailsSchema = z.object({
   price: z.number().optional(),
   difficulty: z.string().optional(),
   duration_hours: z.number().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
+  latitude: z.preprocess(
+    (value) => (value == null || value === "" ? undefined : value),
+    z.coerce.number().optional(),
+  ),
+  longitude: z.preprocess(
+    (value) => (value == null || value === "" ? undefined : value),
+    z.coerce.number().optional(),
+  ),
   max_participants: z.number().optional(),
   enrolledCount: z.number().optional(),
   participants: z.array(participantSchema).optional(),

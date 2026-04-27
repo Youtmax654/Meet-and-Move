@@ -19,10 +19,14 @@
     "db:stop": "cd db && docker compose down",
     "db:prune": "cd db && docker compose down -v",
     "start": "mprocs",
-    "install": "concurrently \"cd mobile && npm install --color=always\" \"cd api && npm install --color=always\" --names \"mobile\",\"api\" -c auto"
+    "install": "concurrently \"cd mobile && npm install --color=always\" \"cd api && npm install --color=always\" --names \"mobile\",\"api\" -c auto",
+    "test": "vitest run api/test mobile/test",
+    "test:mobile": "cd mobile && npm run test",
+    "test:watch": "vitest api/test mobile/test"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "mprocs": "^0.9.2"
+    "mprocs": "^0.9.2",
+    "vitest": "^2.1.8"
   }
 }
