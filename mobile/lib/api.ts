@@ -41,12 +41,12 @@ api.interceptors.request.use(async (config) => {
 });
 
 // TODO: This is a temporary function for development. Replace with real authentication later.
-export const getUserId = async (): Promise<string | null> => {
+export const getUserId = (): string | null => {
   try {
     if (Platform.OS === "web") {
       return localStorage.getItem("debugUserId");
     } else {
-      return await SecureStore.getItemAsync("debugUserId");
+      return SecureStore.getItem("debugUserId");
     }
   } catch (error) {
     console.error("Erreur lors de la récupération du debugUserId", error);
