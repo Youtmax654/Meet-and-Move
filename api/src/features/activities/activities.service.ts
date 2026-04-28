@@ -9,7 +9,11 @@ import {
   users,
 } from "../../db/schema";
 import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
-import { activitySchema, joinedActivitiesSchema } from "./activities.schema";
+import {
+  activitySchema,
+  joinedActivitiesSchema,
+  type CreateActivityBody,
+} from "./schemas";
 
 const activitiesService = {
   getActivityById: async (id: string) => {
@@ -226,6 +230,79 @@ const activitiesService = {
       }),
     );
     return joinedActivitiesSchema.parse(joinedActivities);
+  },
+
+  createActivity: async (hostId: string, payload: CreateActivityBody) => {
+    const db = getDb();
+
+    const specificDetailsRaw = {
+      price: payload.price ?? undefined,
+      difficulty: payload.difficulty ?? undefined,
+      duration_hours: payload.duration_hours ?? undefined,
+      image: payload.image ?? undefined,
+      price_breakdown: payload.price_breakdown ?? undefined,
+      coverImage: payload.coverImage ?? undefined,
+      locationCity: payload.locationCity ?? undefined,
+    };
+    const specificDetails = Object.fromEntries(
+      Object.entries(specificDetailsRaw).filter(
+        ([, value]) => value !== undefined,
+      ),
+    );
+
+    const { activityId } = await db.transaction(async (tx) => {
+      const [createdActivity] = await tx
+        .insert(activities)
+        .values({
+          hostId,
+          title: payload.title,
+          description: payload.description ?? null,
+          categoryId: payload.categoryId ?? null,
+          specificDetails:
+            Object.keys(specificDetails).length > 0 ? specificDetails : null,
+          latitude: payload.latitude ?? null,
+          longitude: payload.longitude ?? null,
+          maxParticipants: payload.max_participants ?? null,
+          minAge: payload.min_age ?? null,
+          maxAge: payload.max_age ?? null,
+          autoValidate: payload.auto_validate ?? true,
+          eventDate: payload.eventDate ?? null,
+        })
+        .returning({ id: activities.id });
+
+      if (!createdActivity) {
+        throw new Error("ACTIVITY_CREATE_FAILED");
+      }
+
+      const [createdChat] = await tx
+        .insert(chats)
+        .values({
+          activityId: createdActivity.id,
+          type: "group",
+        })
+        .returning({ id: chats.id });
+
+      if (!createdChat) {
+        throw new Error("CHAT_CREATE_FAILED");
+      }
+
+      await tx.insert(activityParticipants).values({
+        activityId: createdActivity.id,
+        userId: hostId,
+        status: "accepted",
+        joinedAt: new Date(),
+      });
+
+      await tx.insert(chatMembers).values({
+        chatId: createdChat.id,
+        userId: hostId,
+        joinedAt: new Date(),
+      });
+
+      return { activityId: createdActivity.id };
+    });
+
+    return activitiesService.getActivityById(activityId);
   },
 };
 

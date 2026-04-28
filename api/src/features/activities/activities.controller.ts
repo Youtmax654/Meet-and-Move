@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { activityIdParamsSchema } from "./activities.schema";
+import { activityIdParamsSchema, createActivityBodySchema } from "./schemas";
 import activitiesService from "./activities.service";
 
 export const getActivity = async (c: Context) => {
@@ -71,6 +71,39 @@ export const getJoinedActivities = async (c: Context) => {
     return c.json(activities);
   } catch (error) {
     console.error("Error fetching user joined activities:", error);
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+};
+
+export const createActivity = async (c: Context) => {
+  const userId = c.get("userId");
+
+  if (!userId) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const body = await c.req.json();
+  const parsed = createActivityBodySchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: "Invalid body", details: parsed.error.issues }, 400);
+  }
+
+  try {
+    const activity = await activitiesService.createActivity(
+      userId,
+      parsed.data,
+    );
+
+    if (!activity) {
+      return c.json({ error: "Activity not found" }, 404);
+    }
+
+    return c.json(activity, 201);
+  } catch (error: any) {
+    if (error.code === "23503") {
+      return c.json({ error: "Category not found" }, 404);
+    }
+    console.error("Error creating activity:", error);
     return c.json({ error: "Internal Server Error" }, 500);
   }
 };
