@@ -44,7 +44,7 @@ export const activityDetailsSchema = z.object({
   enrolledCount: z.number().optional(),
   participants: z.array(participantSchema).optional(),
   host: hostSchema.optional(),
-  category: categorySchema.optional(),
+  category: categorySchema.optional().nullable(),
   price_breakdown: z.array(priceBreakdownItemSchema).optional(),
   eventDate: z.string().optional(),
   chatId: z.string().optional(),

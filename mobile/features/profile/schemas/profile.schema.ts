@@ -1,16 +1,17 @@
 import { z } from "zod";
 
 export const userActivitySchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string(),
   coverImage: z.string(),
   locationCity: z.string().nullable(),
   eventDate: z.coerce.date().nullable(),
   category: z
     .object({
-      id: z.string().uuid(),
+      id: z.uuid(),
       name: z.string(),
     })
+    .optional()
     .nullable(),
 });
 

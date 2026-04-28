@@ -43,3 +43,5 @@ export const activitySchema = z.object({
     .default([]),
   eventDate: z.coerce.date().nullable(),
 });
+
+export type Activity = z.infer<typeof activitySchema>;

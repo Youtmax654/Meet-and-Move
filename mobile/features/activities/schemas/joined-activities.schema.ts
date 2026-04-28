@@ -11,7 +11,8 @@ export const joinedActivitySchema = z.object({
     .object({
       name: z.string(),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   enrolledCount: z.number(),
   chatId: z.string().optional(),
 });
