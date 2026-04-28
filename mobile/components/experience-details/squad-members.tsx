@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Avatar, Text, View, XStack, YStack } from "tamagui";
-import { Activity } from "../../types/activity";
+import { ActivityDetails } from "@/features/experience/schemas/activity-details.schema";
 
-export function SquadMembers({ activity }: { activity?: Activity }) {
+export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
   const enrolledCount = activity?.enrolledCount || 0;
   const maxParticipants = activity?.max_participants || 0;
 
@@ -21,11 +21,22 @@ export function SquadMembers({ activity }: { activity?: Activity }) {
         {/* Hôte */}
         <YStack alignItems="center" gap={8} width={70}>
           <Avatar circular size={56} borderColor="#006666" borderWidth={2}>
-            <Avatar.Image src={activity?.host?.avatar || `https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`} />
+            <Avatar.Image
+              src={
+                activity?.host?.avatar ||
+                `https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`
+              }
+            />
             <Avatar.Fallback backgroundColor="#006666" />
           </Avatar>
           <YStack alignItems="center">
-            <Text fontSize={12} fontWeight="600" color="#2E2F2F" textAlign="center" numberOfLines={1}>
+            <Text
+              fontSize={12}
+              fontWeight="600"
+              color="#2E2F2F"
+              textAlign="center"
+              numberOfLines={1}
+            >
               {activity?.host?.username || "Hôte"}
             </Text>
             <Text fontSize={10} fontWeight="400" color="#5B5C5B">
@@ -35,35 +46,53 @@ export function SquadMembers({ activity }: { activity?: Activity }) {
         </YStack>
 
         {/* Participants (Excluant l'hôte pour éviter les doublons si présent dans la liste) */}
-        {activity?.participants?.filter(p => p.id !== activity?.host?.id).map((participant) => (
-          <YStack key={participant.id} alignItems="center" gap={8} width={70}>
-            <Avatar circular size={56}>
-              <Avatar.Image src={participant.avatar || `https://i.pravatar.cc/150?u=${participant.id}`} />
-              <Avatar.Fallback backgroundColor="#ADADAC" />
-            </Avatar>
-            <Text fontSize={12} fontWeight="400" color="#2E2F2F" textAlign="center" numberOfLines={1}>
-              {participant.username}
-            </Text>
-          </YStack>
-        ))}
+        {activity?.participants
+          ?.filter((p) => p.id !== activity?.host?.id)
+          .map((participant) => (
+            <YStack key={participant.id} alignItems="center" gap={8} width={70}>
+              <Avatar circular size={56}>
+                <Avatar.Image
+                  src={
+                    participant.avatar ||
+                    `https://i.pravatar.cc/150?u=${participant.id}`
+                  }
+                />
+                <Avatar.Fallback backgroundColor="#ADADAC" />
+              </Avatar>
+              <Text
+                fontSize={12}
+                fontWeight="400"
+                color="#2E2F2F"
+                textAlign="center"
+                numberOfLines={1}
+              >
+                {participant.username}
+              </Text>
+            </YStack>
+          ))}
 
         {/* Bouton "Votre Place" si pas plein */}
         {enrolledCount < (activity?.max_participants || 0) && (
           <YStack alignItems="center" gap={8} width={70}>
-            <View 
-              width={56} 
-              height={56} 
-              borderRadius={28} 
-              borderWidth={2} 
-              borderColor="#ADADAC" 
-              borderStyle="dashed" 
+            <View
+              width={56}
+              height={56}
+              borderRadius={28}
+              borderWidth={2}
+              borderColor="#ADADAC"
+              borderStyle="dashed"
               backgroundColor="#E2E2E1"
-              alignItems="center" 
+              alignItems="center"
               justifyContent="center"
             >
               <Ionicons name="add" size={24} color="#5B5C5B" />
             </View>
-            <Text fontSize={12} color="#5B5C5B" fontWeight="400" textAlign="center">
+            <Text
+              fontSize={12}
+              color="#5B5C5B"
+              fontWeight="400"
+              textAlign="center"
+            >
               Votre Place
             </Text>
           </YStack>

@@ -1,4 +1,4 @@
-import { Activity } from "@/features/home/schemas/feed.schema";
+import { ActivityDetails } from "./activity-details.schema";
 
 export type JoinOutcome =
   | {
@@ -21,7 +21,7 @@ export type JoinOutcome =
     };
 
 export interface JoinActivityParams {
-  activity?: Activity;
+  activity?: ActivityDetails;
   hasJoined: boolean;
   joinRequest: (activityId: string) => Promise<void>;
 }

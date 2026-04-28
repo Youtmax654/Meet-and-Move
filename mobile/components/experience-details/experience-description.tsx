@@ -1,7 +1,11 @@
 import { Text, YStack } from "tamagui";
-import { Activity } from "../../types/activity";
+import { ActivityDetails } from "@/features/experience/schemas/activity-details.schema";
 
-export function ExperienceDescription({ activity }: { activity?: Activity }) {
+export function ExperienceDescription({
+  activity,
+}: {
+  activity?: ActivityDetails;
+}) {
   return (
     <YStack gap={16} pb={32}>
       <Text fontSize={20} fontWeight="700" color="#2E2F2F">

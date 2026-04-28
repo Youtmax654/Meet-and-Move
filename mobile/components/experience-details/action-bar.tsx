@@ -7,9 +7,9 @@ import { api, getUserId } from "@/lib/api";
 import { runJoinActivityFlow } from "@/features/experience/experience.service";
 import { useToast } from "../../context/toast-context";
 import { INBOX_QUERY_KEY } from "../../features/chat/inbox/hooks/use-inbox";
-import type { Activity } from "../../types/activity";
+import { ActivityDetails } from "@/features/experience/schemas/activity-details.schema";
 
-export function ActionBar({ activity }: { activity?: Activity }) {
+export function ActionBar({ activity }: { activity?: ActivityDetails }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast } = useToast();

@@ -1,9 +1,9 @@
+import { ActivityDetails } from "@/features/experience/schemas/activity-details.schema";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Text, View } from "tamagui";
-import { Activity } from "../../types/activity";
 
-export function HeroSection({ activity }: { activity?: Activity }) {
+export function HeroSection({ activity }: { activity?: ActivityDetails }) {
   return (
     <View
       position="relative"

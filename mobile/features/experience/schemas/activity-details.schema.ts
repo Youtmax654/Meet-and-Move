@@ -49,3 +49,5 @@ export const activityDetailsSchema = z.object({
   eventDate: z.string().optional(),
   chatId: z.string().optional(),
 });
+
+export type ActivityDetails = z.infer<typeof activityDetailsSchema>;

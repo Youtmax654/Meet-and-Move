@@ -7,7 +7,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, View, XStack } from "tamagui";
 
 import { ActionBar } from "@/components/experience-details/action-bar";
-import { activityDetailsSchema } from "@/features/experience/schemas/activity-details.schema";
+import {
+  ActivityDetails,
+  activityDetailsSchema,
+} from "@/features/experience/schemas/activity-details.schema";
 import { api } from "@/lib/api";
 import { ExperienceDescription } from "../../components/experience-details/experience-description";
 import { ExperienceHeader } from "../../components/experience-details/experience-header";
@@ -15,7 +18,6 @@ import { HeroSection } from "../../components/experience-details/hero-section";
 import { PriceBreakdown } from "../../components/experience-details/price-breakdown";
 import { SquadMembers } from "../../components/experience-details/squad-members";
 import { NotFoundError } from "../../components/ui/not-found-error";
-import type { Activity } from "../../types/activity";
 
 export default function ExperienceDetailsScreen() {
   const router = useRouter();
@@ -27,7 +29,7 @@ export default function ExperienceDetailsScreen() {
     isLoading,
     isError,
     error,
-  } = useQuery<Activity, unknown>({
+  } = useQuery<ActivityDetails>({
     queryKey: ["activity-details", id],
     enabled: Boolean(id),
     queryFn: async () => {
@@ -80,10 +82,7 @@ export default function ExperienceDetailsScreen() {
             ? "Activité introuvable"
             : "Erreur de chargement"
         }
-        message={
-          errorMessage ||
-          "L'activité que tu cherches n'existe pas ou a été supprimée."
-        }
+        message="L'activité que tu cherches n'existe pas ou a été supprimée."
         buttonText="Retour"
         onPress={() => router.back()}
       />
