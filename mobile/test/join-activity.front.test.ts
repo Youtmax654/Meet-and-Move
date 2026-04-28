@@ -1,110 +1,130 @@
-import React from "react";
-import { act, create } from "react-test-renderer";
+import { AxiosError } from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ActionBar } from "../components/experience-details/action-bar";
+import { runJoinActivityFlow } from "../features/experience/experience.service";
 import type { Activity } from "../types/activity";
 
-const {
-  routerPush,
-  routerReplace,
-  invalidateQueries,
-  showToast,
-  apiPost,
-  getUserId,
-} = vi.hoisted(() => ({
-  routerPush: vi.fn(),
-  routerReplace: vi.fn(),
-  invalidateQueries: vi.fn(async () => undefined),
-  showToast: vi.fn(),
-  apiPost: vi.fn(async () => undefined),
-  getUserId: vi.fn(async () => "user-1"),
-}));
+describe("runJoinActivityFlow", () => {
+  const joinRequest = vi.fn(async (_activityId: string) => undefined);
 
-vi.mock("expo-router", () => ({
-  useRouter: () => ({ push: routerPush, replace: routerReplace }),
-}));
-
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: () => ({ invalidateQueries }),
-}));
-
-vi.mock("../context/toast-context", () => ({
-  useToast: () => ({ showToast }),
-}));
-
-vi.mock("@/lib/api", () => ({
-  api: { post: apiPost },
-  getUserId,
-}));
-
-vi.mock("@expo/vector-icons", () => ({
-  Ionicons: () => null,
-}));
-
-vi.mock("tamagui", () => {
-  const ReactModule = require("react");
-
-  const MockView = ({ children, ...props }: any) =>
-    ReactModule.createElement("div", props, children);
-  const MockText = ({ children, ...props }: any) =>
-    ReactModule.createElement("span", props, children);
-  const MockButton = ({ children, onPress, ...props }: any) =>
-    ReactModule.createElement(
-      "button",
-      { ...props, onClick: onPress },
-      children,
-    );
-  const MockSpinner = (props: any) =>
-    ReactModule.createElement("span", props, "spinner");
-
-  return {
-    View: MockView,
-    XStack: MockView,
-    Text: MockText,
-    Button: MockButton,
-    Spinner: MockSpinner,
+  const activity: Activity = {
+    id: "activity-123",
+    title: "Escalade",
+    description: "Test activity",
+    participants: [],
+    chatId: "chat-1",
   };
-});
 
-describe("ActionBar join activity", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     vi.clearAllMocks();
-    getUserId.mockResolvedValue("user-1");
   });
 
-  it("calls join API, invalidates inbox, shows toast and redirects", async () => {
-    const activity: Activity = {
-      id: "activity-123",
-      title: "Escalade",
-      description: "Test activity",
-      participants: [],
-      chatId: "chat-1",
-    };
-
-    let renderer: any;
-    await act(async () => {
-      renderer = create(React.createElement(ActionBar, { activity }));
+  it("returns joined outcome on success", async () => {
+    const result = await runJoinActivityFlow({
+      activity,
+      hasJoined: false,
+      joinRequest,
     });
 
-    const buttons = renderer.root.findAllByType("button");
-    expect(buttons.length).toBeGreaterThan(0);
+    expect(joinRequest).toHaveBeenCalledWith("activity-123");
+    expect(result).toEqual({
+      type: "joined",
+      successMessage: 'Bravo ! Tu as rejoint l\'activité "Escalade"',
+      redirectTo: "/(tabs)",
+      redirectDelayMs: 1500,
+      shouldInvalidateInbox: true,
+    });
+  });
 
-    await act(async () => {
-      buttons[0].props.onClick();
+  it("returns open-chat when already joined and chat exists", async () => {
+    const result = await runJoinActivityFlow({
+      activity,
+      hasJoined: true,
+      joinRequest,
     });
 
-    expect(apiPost).toHaveBeenCalledWith("/activities/activity-123/join");
-    expect(invalidateQueries).toHaveBeenCalledTimes(1);
-    expect(showToast).toHaveBeenCalledWith(
-      'Bravo ! Tu as rejoint l\'activité "Escalade"',
-      "success",
+    expect(joinRequest).not.toHaveBeenCalled();
+    expect(result).toEqual({ type: "open-chat", chatId: "chat-1" });
+  });
+
+  it("returns error when already joined but no chat exists", async () => {
+    const result = await runJoinActivityFlow({
+      activity: { ...activity, chatId: undefined },
+      hasJoined: true,
+      joinRequest,
+    });
+
+    expect(joinRequest).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      type: "error",
+      message: "La discussion n'est pas encore disponible.",
+    });
+  });
+
+  it("returns debug message on 401", async () => {
+    joinRequest.mockRejectedValueOnce(
+      new AxiosError(
+        "Unauthorized",
+        "401",
+        undefined,
+        undefined,
+        { status: 401, statusText: "Unauthorized", headers: {}, config: { headers: {} as any }, data: {} },
+      ),
     );
 
-    await act(async () => {
-      vi.advanceTimersByTime(1500);
+    const result = await runJoinActivityFlow({
+      activity,
+      hasJoined: false,
+      joinRequest,
     });
 
-    expect(routerReplace).toHaveBeenCalledWith("/(tabs)");
+    expect(result).toEqual({
+      type: "error",
+      message:
+        "Sélectionne d'abord un utilisateur dans le menu de debug (icône bug) !",
+    });
+  });
+
+  it("returns API error message when present", async () => {
+    joinRequest.mockRejectedValueOnce(
+      new AxiosError(
+        "Bad Request",
+        "400",
+        undefined,
+        undefined,
+        {
+          status: 400,
+          statusText: "Bad Request",
+          headers: {},
+          config: { headers: {} as any },
+          data: { error: "Tu es déjà inscrit" },
+        },
+      ),
+    );
+
+    const result = await runJoinActivityFlow({
+      activity,
+      hasJoined: false,
+      joinRequest,
+    });
+
+    expect(result).toEqual({
+      type: "error",
+      message: "Tu es déjà inscrit",
+    });
+  });
+
+  it("returns generic message for unknown errors", async () => {
+    joinRequest.mockRejectedValueOnce("boom");
+
+    const result = await runJoinActivityFlow({
+      activity,
+      hasJoined: false,
+      joinRequest,
+    });
+
+    expect(result).toEqual({
+      type: "error",
+      message: "Une erreur est survenue",
+    });
   });
 });

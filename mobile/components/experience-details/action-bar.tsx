@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Button, Spinner, Text, View, XStack } from "tamagui";
 import { api, getUserId } from "@/lib/api";
+import { runJoinActivityFlow } from "@/features/experience/experience.service";
 import { useToast } from "../../context/toast-context";
 import { INBOX_QUERY_KEY } from "../../features/chat/inbox/hooks/use-inbox";
 import type { Activity } from "../../types/activity";
@@ -32,48 +32,44 @@ export function ActionBar({ activity }: { activity?: Activity }) {
   const handlePress = async () => {
     if (!activity) return;
 
-    if (hasJoined) {
-      if (activity.chatId) {
-        router.push(`/chat/${activity.chatId}`);
-      } else {
-        showToast("La discussion n'est pas encore disponible.", "error");
-      }
-      return;
-    }
-
     try {
       setLoading(true);
-      await api.post(`/activities/${activity.id}/join`);
-      await queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
-      showToast(
-        `Bravo ! Tu as rejoint l'activité "${activity.title}"`,
-        "success",
-      );
+      const outcome = await runJoinActivityFlow({
+        activity,
+        hasJoined,
+        joinRequest: async (activityId) => {
+          await api.post(`/activities/${activityId}/join`);
+        },
+      });
+
+      if (outcome.type === "noop") {
+        return;
+      }
+
+      if (outcome.type === "open-chat") {
+        router.push(`/chat/${outcome.chatId}`);
+        return;
+      }
+
+      if (outcome.type === "error") {
+        showToast(outcome.message, "error");
+        return;
+      }
+
+      if (outcome.shouldInvalidateInbox) {
+        await queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
+      }
+
+      showToast(outcome.successMessage, "success");
 
       setTimeout(() => {
-        router.replace("/(tabs)");
-      }, 1500);
+        router.replace(outcome.redirectTo);
+      }, outcome.redirectDelayMs);
     } catch (error: unknown) {
       console.error("Join error:", error);
-      if (error instanceof AxiosError && error.response?.status === 401) {
-        showToast(
-          "Sélectionne d'abord un utilisateur dans le menu de debug (icône bug) !",
-          "error",
-        );
-      } else {
-        const fallbackMessage =
-          error instanceof Error ? error.message : "Une erreur est survenue";
-        const apiMessage =
-          error instanceof AxiosError &&
-          typeof error.response?.data === "object" &&
-          error.response?.data !== null &&
-          "error" in error.response.data &&
-          typeof (error.response.data as { error?: unknown }).error === "string"
-            ? (error.response.data as { error: string }).error
-            : null;
-
-        showToast(apiMessage ?? fallbackMessage, "error");
-      }
+      const message =
+        error instanceof Error ? error.message : "Une erreur est survenue";
+      showToast(message, "error");
     } finally {
       setLoading(false);
     }
