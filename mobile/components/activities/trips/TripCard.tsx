@@ -3,8 +3,8 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Text, XStack, YStack } from "tamagui";
 
-import { AvatarGroup } from "@/components/activities/shared/AvatarGroup";
-import { Trip } from "@/components/activities/types";
+import { Trip } from "../types";
+import { AvatarGroup } from "../shared/AvatarGroup";
 
 type TripCardProps = {
   trip: Trip;

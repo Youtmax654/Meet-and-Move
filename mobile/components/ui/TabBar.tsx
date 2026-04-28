@@ -26,7 +26,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
         return { icon: "layers" as IconName, label: "Activités" };
       case "chats":
         return { icon: "chatbubble-ellipses" as IconName, label: "Messages" };
-      case "profil":
+      case "profile":
         return { icon: "person" as IconName, label: "Profil" };
       default:
         // fallback to explore if 'explore' route exists

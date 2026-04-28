@@ -9,6 +9,7 @@ import activitiesRoute from "./features/activities/activities.routes";
 import authRoute from "./features/auth/auth.routes";
 import chatsRoute from "./features/chats/chats.routes";
 import feedRoute from "./features/feed/feed.route";
+import usersRoute from "./features/users/users.routes";
 import { authMiddleware } from "./middleware/auth";
 
 type AppEnv = {
@@ -60,5 +61,6 @@ app.route("/auth", authRoute);
 app.route("/activities", activitiesRoute);
 app.route("/feed", feedRoute);
 app.route("/chats", chatsRoute);
+app.route("/users", usersRoute);
 
 export default app;
