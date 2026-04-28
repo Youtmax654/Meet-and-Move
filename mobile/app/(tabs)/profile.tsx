@@ -1,7 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ScrollView, YStack } from "tamagui";
+import { Circle, ScrollView, YStack } from "tamagui";
 
 import { useQuery } from "@tanstack/react-query";
 import { ProfileCoverHeader } from "@/features/profile/components/ProfileCoverHeader";
@@ -108,6 +109,24 @@ export default function ProfilScreen() {
             </YStack>
           </YStack>
         </ScrollView>
+
+        <Circle
+          position="absolute"
+          bottom={96}
+          right={20}
+          size={56}
+          backgroundColor="#006666"
+          elevation={6}
+          shadowColor="#000"
+          shadowOpacity={0.2}
+          shadowRadius={6}
+          shadowOffset={{ width: 0, height: 3 }}
+          pressStyle={{ scale: 0.96 }}
+          onPress={() => router.push("/activities/create")}
+          accessibilityLabel="Creer une activite"
+        >
+          <Ionicons name="add" size={26} color="#FFFFFF" />
+        </Circle>
       </SafeAreaView>
     </>
   );
