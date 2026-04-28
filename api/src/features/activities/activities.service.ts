@@ -227,6 +227,59 @@ const activitiesService = {
     );
     return joinedActivitiesSchema.parse(joinedActivities);
   },
+  modifyActivity: async (id: string, updates: any) => {
+    const db = getDb();
+
+    const result = await db
+      .select({ specificDetails: activities.specificDetails })
+      .from(activities)
+      .where(eq(activities.id, id))
+      .limit(1);
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    const details = (result[0].specificDetails as any) || {};
+    const directUpdates: any = {};
+
+    if (updates.description !== undefined) {
+      directUpdates.description = updates.description;
+    }
+    
+    if (updates.maxParticipants !== undefined) {
+      directUpdates.maxParticipants = updates.maxParticipants;
+    }
+
+    // Mettre à jour les champs spécifiques à l'activité
+    if (updates.duration_hours !== undefined) {
+      details.duration_hours = updates.duration_hours;
+    }
+
+    if (updates.difficulty !== undefined) {
+      details.difficulty = updates.difficulty;
+    }
+
+    if (updates.price_breakdown !== undefined) {
+      details.price_breakdown = updates.price_breakdown;
+    }
+
+    if (updates.locationCity !== undefined) {
+      details.locationCity = updates.locationCity;
+    }
+
+    if (updates.coverImage !== undefined) {
+      details.coverImage = updates.coverImage;
+    }
+
+    await db.update(activities).set({
+      specificDetails: details,
+      ...directUpdates
+    }).where(eq(activities.id, id));
+
+    return await activitiesService.getActivityById(id);
+  },
+
 };
 
 export default activitiesService;

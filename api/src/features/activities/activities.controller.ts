@@ -74,3 +74,29 @@ export const getJoinedActivities = async (c: Context) => {
     return c.json({ error: "Internal Server Error" }, 500);
   }
 };
+
+export const modifyActivity = async (c: Context) => {
+  const paramsParsed = activityIdParamsSchema.safeParse(c.req.param());
+  if (!paramsParsed.success) {
+    return c.json(
+      { error: "Invalid params", details: paramsParsed.error.issues },
+      400,
+    );
+  }
+
+  const { id } = paramsParsed.data;
+
+  try {
+    const body = await c.req.json();
+    const activity = await activitiesService.modifyActivity(id, body);
+
+    if (!activity) {
+      return c.json({ error: "Activity not found" }, 404);
+    }
+
+    return c.json(activity);
+  } catch (error) {
+    console.error("Error modifying activity:", error);
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+};
