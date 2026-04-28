@@ -1,4 +1,4 @@
-
+import { Activity } from "@/features/home/schemas/feed.schema";
 
 export type JoinOutcome =
   | {
