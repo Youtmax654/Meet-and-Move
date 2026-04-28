@@ -1,6 +1,7 @@
 import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
 import type { FeedActivity } from "./feed.schema";
 
+// TODO: Remove this code and this file
 export const mapActivityToCard = (activity: FeedActivity) => {
   return {
     id: activity.id,
