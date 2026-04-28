@@ -124,7 +124,18 @@ export default function ExperienceDetailsScreen() {
           <Text fontWeight="800" color="#006666" fontSize={16}>
             {activity.title}
           </Text>
-          <View width={40} />
+          <Pressable onPress={() => router.push(`/experience/edit/${id}`)}>
+            <View
+              width={40}
+              height={40}
+              borderRadius={20}
+              alignItems="center"
+              justifyContent="center"
+              backgroundColor="rgba(0, 102, 102, 0.1)"
+            >
+              <Ionicons name="pencil" size={20} color="#006666" />
+            </View>
+          </Pressable>
         </XStack>
 
         <ScrollView
