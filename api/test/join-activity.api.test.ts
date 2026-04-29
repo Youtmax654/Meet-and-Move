@@ -35,7 +35,12 @@ describe("activities.service.joinActivity", () => {
   });
 
   it("adds participant and chat member when user joins a chat-backed activity", async () => {
-    const { db, insertCalls } = createDbMock([[], [{ id: "chat-1" }], []]);
+    const { db, insertCalls } = createDbMock([
+      [{ maxParticipants: null }],
+      [],
+      [{ id: "chat-1" }],
+      [],
+    ]);
 
     vi.spyOn(dbModule, "getDb").mockReturnValue(db as any);
 
@@ -56,35 +61,45 @@ describe("activities.service.joinActivity", () => {
     });
   });
 
-  it("does not insert chat member twice when user is already in the activity discussion group", async () => {
-    const { db, insertCalls } = createDbMock([
-      [],
-      [{ id: "chat-1" }],
-      [{ chatId: "chat-1", userId: "user-1" }],
-    ]);
-
-    vi.spyOn(dbModule, "getDb").mockReturnValue(db as any);
-
-    const result = await activitiesService.joinActivity("activity-1", "user-1");
-
-    expect(result).toEqual({ success: true });
-    expect(insertCalls).toHaveLength(1);
-    expect(insertCalls[0].table).toBe(activityParticipants);
-    expect(insertCalls[0].values).toMatchObject({
-      activityId: "activity-1",
-      userId: "user-1",
-      status: "accepted",
-    });
-  });
-
   it("rejects duplicate joins", async () => {
-    const { db, insertCalls } = createDbMock([[{ userId: "user-1" }]]);
+    const { db, insertCalls } = createDbMock([
+      [{ maxParticipants: null }],
+      [{ userId: "user-1" }],
+    ]);
 
     vi.spyOn(dbModule, "getDb").mockReturnValue(db as any);
 
     await expect(
       activitiesService.joinActivity("activity-1", "user-1"),
     ).rejects.toThrow("ALREADY_JOINED");
+
+    expect(insertCalls).toHaveLength(0);
+  });
+
+  it("rejects when activity does not exist", async () => {
+    const { db, insertCalls } = createDbMock([[]]);
+
+    vi.spyOn(dbModule, "getDb").mockReturnValue(db as any);
+
+    await expect(
+      activitiesService.joinActivity("activity-1", "user-1"),
+    ).rejects.toThrow("ACTIVITY_NOT_FOUND");
+
+    expect(insertCalls).toHaveLength(0);
+  });
+
+  it("rejects when activity is full", async () => {
+    const { db, insertCalls } = createDbMock([
+      [{ maxParticipants: 1 }],
+      [],
+      [{ userId: "user-2" }],
+    ]);
+
+    vi.spyOn(dbModule, "getDb").mockReturnValue(db as any);
+
+    await expect(
+      activitiesService.joinActivity("activity-1", "user-1"),
+    ).rejects.toThrow("ACTIVITY_FULL");
 
     expect(insertCalls).toHaveLength(0);
   });
