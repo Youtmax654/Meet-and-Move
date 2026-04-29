@@ -1,4 +1,3 @@
-import { useNetInfo } from "@react-native-community/netinfo";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView } from "react-native";
@@ -17,7 +16,6 @@ import {
 import { api } from "@/lib/api";
 
 export function ActivitiesScreen() {
-  const netInfo = useNetInfo();
   const [activeTab, setActiveTab] = useState<TripStatus>("upcoming");
 
   const { data, isLoading, isError, refetch } = useQuery<JoinedActivity[]>({
@@ -111,7 +109,6 @@ export function ActivitiesScreen() {
             />
           ) : isError ? (
             <NetworkErrorState
-              type={netInfo.isConnected === false ? "offline" : "server"}
               message="Impossible de charger tes activités pour le moment. Réessaie plus tard."
               onRetry={refetch}
             />

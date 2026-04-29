@@ -1,6 +1,8 @@
+import { useNetInfo } from "@react-native-community/netinfo";
 import { ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, YStack } from "tamagui";
+import { NetworkErrorState } from "@/components/ui/network-error-state";
 
 export function ProfileLoadingState() {
   return (
@@ -12,23 +14,16 @@ export function ProfileLoadingState() {
   );
 }
 
-export function ProfileErrorState() {
+export function ProfileErrorState({ onRetry }: { onRetry?: () => void }) {
+  const netInfo = useNetInfo();
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F7F6F5" }}>
-      <YStack
-        flex={1}
-        alignItems="center"
-        justifyContent="center"
-        px={24}
-        gap={8}
-      >
-        <Text fontSize={18} color="#1E2228" fontWeight="700">
-          Profil indisponible
-        </Text>
-        <Text fontSize={14} color="#5B5C5B" textAlign="center">
-          Impossible de charger ce profil pour le moment.
-        </Text>
-      </YStack>
+      <NetworkErrorState 
+        message="Impossible de charger ce profil pour le moment."
+        type={netInfo.isConnected === false ? "offline" : "server"}
+        onRetry={onRetry}
+      />
     </SafeAreaView>
   );
 }

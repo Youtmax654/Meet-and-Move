@@ -1,3 +1,4 @@
+import { useNetInfo } from "@react-native-community/netinfo";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator } from "react-native";
@@ -5,10 +6,12 @@ import { ScrollView, Text, YStack } from "tamagui";
 import { formatShortFrenchDate } from "@/lib/date";
 import { useInbox } from "../hooks/use-inbox";
 import { InboxItem } from "./InboxItem";
+import { NetworkErrorState } from "@/components/ui/network-error-state";
 
 export function InboxList() {
+  const netInfo = useNetInfo();
   const router = useRouter();
-  const { data: chats, isLoading, isError, error } = useInbox();
+  const { data: chats, isLoading, isError, error, refetch } = useInbox();
 
   if (isLoading) {
     return (
@@ -20,11 +23,12 @@ export function InboxList() {
 
   if (isError) {
     return (
-      <YStack flex={1} alignItems="center" justifyContent="center" padding="$4">
-        <Text color="#E53E3E" textAlign="center">
-          Impossible de charger les conversations.{"\n"}
-          {error?.message}
-        </Text>
+      <YStack flex={1}>
+        <NetworkErrorState 
+          message="Impossible de charger les conversations."
+          type={netInfo.isConnected === false ? "offline" : "server"}
+          onRetry={refetch}
+        />
       </YStack>
     );
   }
