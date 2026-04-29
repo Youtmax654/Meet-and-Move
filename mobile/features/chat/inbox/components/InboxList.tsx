@@ -24,7 +24,7 @@ export function InboxList() {
   if (isError) {
     return (
       <YStack flex={1}>
-        <NetworkErrorState 
+        <NetworkErrorState
           message="Impossible de charger les conversations."
           type={netInfo.isConnected === false ? "offline" : "server"}
           onRetry={refetch}

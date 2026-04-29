@@ -1,3 +1,4 @@
+import { useNetInfo } from "@react-native-community/netinfo";
 import { useQuery } from "@tanstack/react-query";
 import { ActivityIndicator, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,6 +11,8 @@ import { homeFeedSchema } from "@/features/home/schemas/feed.schema";
 import { api } from "@/lib/api";
 
 export function HomeScreen() {
+  const netInfo = useNetInfo();
+
   const {
     data: activities,
     isLoading,
@@ -67,6 +70,7 @@ export function HomeScreen() {
             </YStack>
           ) : isError ? (
             <NetworkErrorState
+              type={netInfo.isConnected === false ? "offline" : "server"}
               message="Vos activités n'ont pas pu être affichées en raison d'un problème serveur."
               onRetry={refetch}
             />

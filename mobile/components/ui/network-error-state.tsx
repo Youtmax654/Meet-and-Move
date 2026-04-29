@@ -1,4 +1,3 @@
-import { useNetInfo } from "@react-native-community/netinfo";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Text, YStack } from "tamagui";
 
@@ -7,15 +6,16 @@ import { IconSymbol } from "./icon-symbol";
 type NetworkErrorStateProps = {
   onRetry?: () => void;
   message?: string;
+  type?: "offline" | "server";
 };
 
 export function NetworkErrorState({
   onRetry,
   message = "Un problème est survenu avec le serveur.",
+  type = "server",
 }: NetworkErrorStateProps) {
   const queryClient = useQueryClient();
-  const netInfo = useNetInfo();
-  const isOffline = netInfo.isConnected === false;
+  const isOffline = type === "offline";
 
   return (
     <YStack
@@ -54,7 +54,7 @@ export function NetworkErrorState({
         color="white"
         fontWeight="600"
         onPress={() => {
-          queryClient.resetQueries();
+          queryClient.invalidateQueries();
           if (onRetry) onRetry();
         }}
         pressStyle={{ opacity: 0.8 }}

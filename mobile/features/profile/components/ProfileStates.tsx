@@ -19,7 +19,7 @@ export function ProfileErrorState({ onRetry }: { onRetry?: () => void }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F7F6F5" }}>
-      <NetworkErrorState 
+      <NetworkErrorState
         message="Impossible de charger ce profil pour le moment."
         type={netInfo.isConnected === false ? "offline" : "server"}
         onRetry={onRetry}
