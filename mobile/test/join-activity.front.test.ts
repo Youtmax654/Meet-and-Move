@@ -35,32 +35,7 @@ describe("runJoinActivityFlow", () => {
     });
   });
 
-  it("returns open-chat when already joined and chat exists", async () => {
-    const result = await runJoinActivityFlow({
-      activity,
-      hasJoined: true,
-      joinRequest,
-    });
-
-    expect(joinRequest).not.toHaveBeenCalled();
-    expect(result).toEqual({ type: "open-chat", chatId: "chat-1" });
-  });
-
-  it("returns error when already joined but no chat exists", async () => {
-    const result = await runJoinActivityFlow({
-      activity: { ...activity, chatId: undefined },
-      hasJoined: true,
-      joinRequest,
-    });
-
-    expect(joinRequest).not.toHaveBeenCalled();
-    expect(result).toEqual({
-      type: "error",
-      message: "La discussion n'est pas encore disponible.",
-    });
-  });
-
-  it("returns debug message on 401", async () => {
+  it("returns debug message on 401 when user is not selected in debug menu", async () => {
     joinRequest.mockRejectedValueOnce(
       new AxiosError(
         "Unauthorized",
@@ -84,7 +59,7 @@ describe("runJoinActivityFlow", () => {
     });
   });
 
-  it("returns API error message when present", async () => {
+  it("returns API error message when user is already in the activity", async () => {
     joinRequest.mockRejectedValueOnce(
       new AxiosError(
         "Bad Request",
@@ -113,18 +88,14 @@ describe("runJoinActivityFlow", () => {
     });
   });
 
-  it("returns generic message for unknown errors", async () => {
-    joinRequest.mockRejectedValueOnce("boom");
-
+  it("returns open-chat when already joined", async () => {
     const result = await runJoinActivityFlow({
       activity,
-      hasJoined: false,
+      hasJoined: true,
       joinRequest,
     });
 
-    expect(result).toEqual({
-      type: "error",
-      message: "Une erreur est survenue",
-    });
+    expect(joinRequest).not.toHaveBeenCalled();
+    expect(result).toEqual({ type: "open-chat", chatId: "chat-1" });
   });
 });

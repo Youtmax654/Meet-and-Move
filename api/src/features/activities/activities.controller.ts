@@ -53,6 +53,12 @@ export const joinActivity = async (c: Context) => {
     if (error.message === "ALREADY_JOINED" || error.code === "23505") {
       return c.json({ error: "Tu as déjà rejoint cette activité !" }, 409);
     }
+    if (error.message === "ACTIVITY_NOT_FOUND") {
+      return c.json({ error: "Activité introuvable" }, 404);
+    }
+    if (error.message === "ACTIVITY_FULL") {
+      return c.json({ error: "Activité complète" }, 409);
+    }
     if (error.code === "23503") {
       return c.json({ error: "Activité introuvable" }, 404);
     }

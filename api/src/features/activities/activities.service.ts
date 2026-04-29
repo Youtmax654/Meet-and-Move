@@ -109,6 +109,18 @@ const activitiesService = {
   ): Promise<{ success: boolean }> => {
     const db = getDb();
 
+    const activityResult = await db
+      .select({ maxParticipants: activities.maxParticipants })
+      .from(activities)
+      .where(eq(activities.id, activityId))
+      .limit(1);
+
+    if (activityResult.length === 0) {
+      throw new Error("ACTIVITY_NOT_FOUND");
+    }
+
+    const maxParticipants = activityResult[0].maxParticipants;
+
     const existing = await db
       .select()
       .from(activityParticipants)
@@ -122,6 +134,27 @@ const activitiesService = {
 
     if (existing.length > 0) {
       throw new Error("ALREADY_JOINED");
+    }
+
+    if (typeof maxParticipants === "number") {
+      if (maxParticipants <= 0) {
+        throw new Error("ACTIVITY_FULL");
+      }
+
+      const acceptedParticipants = await db
+        .select({ userId: activityParticipants.userId })
+        .from(activityParticipants)
+        .where(
+          and(
+            eq(activityParticipants.activityId, activityId),
+            eq(activityParticipants.status, "accepted"),
+          ),
+        )
+        .limit(maxParticipants);
+
+      if (acceptedParticipants.length >= maxParticipants) {
+        throw new Error("ACTIVITY_FULL");
+      }
     }
 
     await db.insert(activityParticipants).values({
