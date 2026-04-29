@@ -87,8 +87,7 @@ export const modifyActivity = async (c: Context) => {
   const { id } = paramsParsed.data;
 
   try {
-    // Il est crucial d'utiliser 'await c.req.json()' pour résoudre la promesse
-    // et lire correctement les données envoyées par l'application mobile.
+    // Utilisation du await car la valeur met du temps à arriver
     const body = await c.req.json();
     
     // Appel au service pour appliquer les modifications en base de données
@@ -100,7 +99,6 @@ export const modifyActivity = async (c: Context) => {
 
     return c.json(activity);
   } catch (error) {
-    console.error("Error modifying activity:", error);
     return c.json({ error: "Internal Server Error" }, 500);
   }
 };
