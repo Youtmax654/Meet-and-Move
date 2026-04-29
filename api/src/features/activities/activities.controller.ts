@@ -36,6 +36,7 @@ export const joinActivity = async (c: Context) => {
     );
   }
 
+  // User must be authenticated to join an activity
   const userId = c.get("userId");
 
   if (!userId) {
@@ -48,6 +49,7 @@ export const joinActivity = async (c: Context) => {
     const result = await activitiesService.joinActivity(activityId, userId);
     return c.json(result);
   } catch (error: any) {
+    // 23505 = unique constraint violation (already joined), 23503 = foreign key violation (activity not found)
     if (error.message === "ALREADY_JOINED" || error.code === "23505") {
       return c.json({ error: "Tu as déjà rejoint cette activité !" }, 409);
     }
@@ -100,6 +102,7 @@ export const createActivity = async (c: Context) => {
 
     return c.json(activity, 201);
   } catch (error: any) {
+    // 23503 = the provided category ID doesn't exist
     if (error.code === "23503") {
       return c.json({ error: "Category not found" }, 404);
     }

@@ -47,7 +47,7 @@ const activitiesService = {
     const normalizedCategory =
       row.category?.id && row.category?.name ? row.category : null;
 
-    // Récupérer la liste des participants acceptés
+    // Fetch the list of accepted participants
     const participantsListFiltered = await db
       .select({
         id: users.id,
@@ -62,13 +62,13 @@ const activitiesService = {
         ),
       );
 
-    // Formater les participants avec leurs avatars pravatar
+    // Format participants with their avatars
     const participantsWithAvatars = participantsListFiltered.map((p) => ({
       ...p,
       avatar: getAvatarUrl(p.id),
     }));
 
-    // Récupérer l'ID du chat lié à l'activité
+    // Fetch the chat ID linked to the activity
     const chatResult = await db
       .select({ id: chats.id })
       .from(chats)
