@@ -243,6 +243,7 @@ const activitiesService = {
     const details = (result[0].specificDetails as any) || {};
     const directUpdates: any = {};
 
+    // 1. Mise à jour des colonnes classiques de la table (description, maxParticipants)
     if (updates.description !== undefined) {
       directUpdates.description = updates.description;
     }
@@ -251,7 +252,7 @@ const activitiesService = {
       directUpdates.maxParticipants = updates.maxParticipants;
     }
 
-    // Mettre à jour les champs spécifiques à l'activité
+    // 2. Mise à jour du champ JSONB (specificDetails) pour la flexibilité (durée, difficulté)
     if (updates.duration_hours !== undefined) {
       details.duration_hours = updates.duration_hours;
     }
@@ -272,6 +273,7 @@ const activitiesService = {
       details.coverImage = updates.coverImage;
     }
 
+    // 3. Exécution de la requête UPDATE en base de données
     await db.update(activities).set({
       specificDetails: details,
       ...directUpdates

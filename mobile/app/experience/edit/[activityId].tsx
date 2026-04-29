@@ -17,7 +17,7 @@ export default function EditExperienceScreen() {
   const id = params.activityId as string; // Note: utilise activityId au lieu de id
   const queryClient = useQueryClient();
 
-  // Local state for the form
+  // États locaux pour stocker temporairement les valeurs saisies par l'utilisateur avant sauvegarde
   const [description, setDescription] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const [maxParticipantsError, setMaxParticipantsError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function EditExperienceScreen() {
     },
   });
 
-  // Populate form once data is loaded
+  // Dès que les données de l'activité sont récupérées du serveur, on pré-remplit les champs
   useEffect(() => {
     if (activity) {
       setDescription(activity.description || "");
@@ -47,6 +47,7 @@ export default function EditExperienceScreen() {
     }
   }, [activity]);
 
+  // Définition de l'action de mise à jour : on envoie une requête PATCH avec les nouvelles valeurs
   const updateMutation = useMutation({
     mutationFn: async (updates: any) => {
       const response = await api.patch(`/activities/${id}`, updates);
@@ -62,17 +63,20 @@ export default function EditExperienceScreen() {
     },
   });
 
+  // Fonction déclenchée lors de l'appui sur le bouton "Enregistrer"
   const handleSave = () => {
-    setMaxParticipantsError(null);
+    setMaxParticipantsError(null); // On réinitialise l'erreur par défaut
     const newMaxParticipants = maxParticipants ? Number(maxParticipants) : null;
 
+    // Validation : on s'assure qu'on ne puisse pas mettre un max inférieur au nombre actuel d'inscrits
     if (newMaxParticipants !== null && activity?.enrolledCount !== undefined) {
       if (newMaxParticipants < activity.enrolledCount) {
         setMaxParticipantsError(`Impossible : il y a déjà ${activity.enrolledCount} participant(s) inscrit(s).`);
-        return;
+        return; // On annule l'enregistrement si la condition n'est pas remplie
       }
     }
 
+    // Si tout est bon, on lance la requête de mise à jour avec les valeurs formatées
     updateMutation.mutate({
       description: description || null,
       maxParticipants: newMaxParticipants,

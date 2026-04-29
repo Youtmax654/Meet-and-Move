@@ -87,7 +87,11 @@ export const modifyActivity = async (c: Context) => {
   const { id } = paramsParsed.data;
 
   try {
+    // Il est crucial d'utiliser 'await c.req.json()' pour résoudre la promesse
+    // et lire correctement les données envoyées par l'application mobile.
     const body = await c.req.json();
+    
+    // Appel au service pour appliquer les modifications en base de données
     const activity = await activitiesService.modifyActivity(id, body);
 
     if (!activity) {
