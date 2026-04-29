@@ -1,3 +1,4 @@
+import { useNetInfo } from "@react-native-community/netinfo";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView } from "react-native";
@@ -8,6 +9,7 @@ import { TripTabs } from "@/components/activities/layout/TripTabs";
 import { MemoriesSection } from "@/components/activities/memories/MemoriesSection";
 import { TripsList } from "@/components/activities/trips/TripsList";
 import type { Memory, Trip, TripStatus } from "@/components/activities/types";
+import { NetworkErrorState } from "@/components/ui/network-error-state";
 import {
   type JoinedActivity,
   joinedActivitiesSchema,
@@ -15,9 +17,10 @@ import {
 import { api } from "@/lib/api";
 
 export function ActivitiesScreen() {
+  const netInfo = useNetInfo();
   const [activeTab, setActiveTab] = useState<TripStatus>("upcoming");
 
-  const { data, isLoading, isError } = useQuery<JoinedActivity[]>({
+  const { data, isLoading, isError, refetch } = useQuery<JoinedActivity[]>({
     queryKey: ["joined-activities"],
     queryFn: async () => {
       const response = await api.get("/activities/joined");
@@ -107,9 +110,11 @@ export function ActivitiesScreen() {
               color="#006666"
             />
           ) : isError ? (
-            <Text color="#E53E3E" marginTop={24}>
-              Impossible de charger tes activités.
-            </Text>
+            <NetworkErrorState
+              type={netInfo.isConnected === false ? "offline" : "server"}
+              message="Impossible de charger tes activités pour le moment. Réessaie plus tard."
+              onRetry={refetch}
+            />
           ) : activeTab === "upcoming" ? (
             <>
               <TripsList trips={trips.filter((t) => t.status === "upcoming")} />

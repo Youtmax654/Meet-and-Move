@@ -22,6 +22,8 @@ const MAPPING = {
   "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
   "square.and.pencil": "edit",
+  "wifi.slash": "wifi-off",
+  "exclamationmark.triangle": "error-outline",
 } as IconMapping;
 
 /**
