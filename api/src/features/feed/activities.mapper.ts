@@ -42,6 +42,6 @@ function formatLocation(
   _lat: number | string | null,
   _lng: number | string | null,
 ) {
-  // Optionnel: on pourrait utiliser un reverse geocoding plus tard
+  // Optionnel: could use reverse geocoding later
   return `Lyon, FR`;
 }

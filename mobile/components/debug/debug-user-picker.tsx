@@ -25,7 +25,7 @@ export function DebugUserPicker() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Restaurer l'utilisateur actif au démarrage
+    // Restore the active user on startup
     const restoreUser = async () => {
       try {
         let debugUserId = null;
@@ -81,7 +81,7 @@ export function DebugUserPicker() {
         }
       }
 
-      // Recharger l'application pour appliquer le changement globalement
+      // Reload the app to apply the change globally
       if (Platform.OS === "web") {
         window.location.reload();
       } else if (__DEV__) {
