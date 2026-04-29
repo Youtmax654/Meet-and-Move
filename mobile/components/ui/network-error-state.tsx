@@ -1,9 +1,10 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Text, YStack } from "tamagui";
 
 import { IconSymbol } from "./icon-symbol";
 
 type NetworkErrorStateProps = {
-  onRetry: () => void;
+  onRetry?: () => void;
   message?: string;
   type?: "offline" | "server";
 };
@@ -13,6 +14,7 @@ export function NetworkErrorState({
   message = "Un problème est survenu avec le serveur.",
   type = "server",
 }: NetworkErrorStateProps) {
+  const queryClient = useQueryClient();
   const isOffline = type === "offline";
 
   return (
@@ -51,7 +53,10 @@ export function NetworkErrorState({
         backgroundColor="#008A87"
         color="white"
         fontWeight="600"
-        onPress={onRetry}
+        onPress={() => {
+          queryClient.resetQueries();
+          if (onRetry) onRetry();
+        }}
         pressStyle={{ opacity: 0.8 }}
       >
         Réessayer
