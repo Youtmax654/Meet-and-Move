@@ -1,0 +1,46 @@
+name: Deploy Landing Page to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "landing/**"
+      - ".github/workflows/deploy-landing.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "landing/**"
+      - ".github/workflows/deploy-landing.yml"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./landing
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Landing Page
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: "meetandmove-landing"
+          directory: "landing/dist"
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
