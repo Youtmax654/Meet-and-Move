@@ -6,6 +6,7 @@ import {
   Heading,
   HStack,
   Image,
+  Link,
   Stack,
   Text,
   VStack,
@@ -29,7 +30,7 @@ export function HeroSection() {
             fontWeight="700"
             color="#9C3D2A"
           >
-            LA BOUSSOLE CURATÉE
+            RENCONTREZ, ORGANISEZ, VIVEZ.
           </Text>
           <Heading
             fontSize={{ base: "40px", md: "56px", lg: "64px" }}
@@ -38,7 +39,7 @@ export function HeroSection() {
           >
             Votre prochaine{" "}
             <Box as="span" color="#006666">
-              aventure
+              sortie
             </Box>{" "}
             est au coin de la rue.
           </Heading>
@@ -54,16 +55,20 @@ export function HeroSection() {
               borderRadius="full"
               px={7}
               _hover={{ opacity: 0.9 }}
+              asChild
             >
-              Explorer les activités
+              <Link href="#launch-cta">Explorer les activités</Link>
             </Button>
             <Button
-              bg="#E8E8E7"
+              bg="transparent"
+              border="1px solid rgba(0, 102, 102, 0.35)"
+              color="#006666"
               borderRadius="full"
               px={7}
-              _hover={{ opacity: 0.9 }}
+              _hover={{ bg: "rgba(0, 102, 102, 0.08)" }}
+              asChild
             >
-              Héberger une activité
+              <Link href="#launch-cta">Héberger une activité</Link>
             </Button>
           </HStack>
         </Stack>
@@ -77,6 +82,7 @@ export function HeroSection() {
             h={{ base: "58%", lg: "70%" }}
             borderRadius="24px"
             overflow="hidden"
+            border="4px solid #FFFFFF"
             boxShadow="0 18px 40px rgba(0, 0, 0, 0.12)"
           >
             <Image

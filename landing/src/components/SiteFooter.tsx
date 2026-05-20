@@ -20,7 +20,7 @@ export function SiteFooter() {
             Meet&Move
           </Heading>
           <Text fontSize="sm" color="#5B5C5B">
-            © 2026 Meet&Move. La boussole des tribus.
+            © 2026 Meet&Move. Rencontrez, organisez, vivez.
           </Text>
         </Stack>
         <HStack gap={6} flexWrap="wrap">
