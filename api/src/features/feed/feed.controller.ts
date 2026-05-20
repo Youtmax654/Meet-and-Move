@@ -17,13 +17,3 @@ export const getAllActivities = async (c: Context) => {
     return c.json({ error: error.message || String(error) }, 500);
   }
 };
-
-export const getGuides = async (c: Context) => {
-  try {
-    const guides = await feedService.getGuides();
-    return c.json(guides || []);
-  } catch (error) {
-    console.error("Error fetching guides:", error);
-    return c.json({ error: "Internal Server Error" }, 500);
-  }
-};

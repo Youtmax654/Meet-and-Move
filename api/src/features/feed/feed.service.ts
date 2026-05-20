@@ -1,13 +1,12 @@
-import { sql as drizzleSql, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "../../db";
 import {
   activities,
   activityParticipants,
   interests,
-  userInterests,
-  users,
+  user,
 } from "../../db/schema";
-import { feedActivitiesSchema, feedGuidesSchema } from "./feed.schema";
+import { feedActivitiesSchema } from "./feed.schema";
 
 const feedService = {
   getAllActivities: async () => {
@@ -17,10 +16,10 @@ const feedService = {
       .select({
         activity: activities,
         host: {
-          id: users.id,
-          username: users.username,
-          bio: users.bio,
-          isVerified: users.isVerified,
+          id: user.id,
+          username: user.name,
+          bio: user.bio,
+          isVerified: user.emailVerified,
         },
         category: {
           id: interests.id,
@@ -28,7 +27,7 @@ const feedService = {
         },
       })
       .from(activities)
-      .innerJoin(users, eq(activities.hostId, users.id))
+      .innerJoin(user, eq(activities.hostId, user.id))
       .leftJoin(interests, eq(activities.categoryId, interests.id))
       .orderBy(activities.createdAt);
 
@@ -39,11 +38,11 @@ const feedService = {
     const allParticipants = await db
       .select({
         activityId: activityParticipants.activityId,
-        userId: users.id,
-        username: users.username,
+        userId: user.id,
+        username: user.name,
       })
       .from(activityParticipants)
-      .innerJoin(users, eq(activityParticipants.userId, users.id))
+      .innerJoin(user, eq(activityParticipants.userId, user.id))
       .where(eq(activityParticipants.status, "accepted"));
 
     const participantsByActivity: Record<
@@ -87,33 +86,6 @@ const feedService = {
       };
     });
     return feedActivitiesSchema.parse(activitiesList);
-  },
-
-  getGuides: async () => {
-    const db = getDb();
-
-    const result = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        bio: users.bio,
-        isVerified: users.isVerified,
-        interests: drizzleSql<string>`string_agg(${interests.name}, ', ')`,
-      })
-      .from(users)
-      .leftJoin(userInterests, eq(users.id, userInterests.userId))
-      .leftJoin(interests, eq(userInterests.interestId, interests.id))
-      .where(eq(users.role, "pro_guide"))
-      .groupBy(users.id, users.username, users.bio, users.isVerified);
-
-    const guides = result.map((g) => ({
-      id: g.id,
-      name: g.username,
-      details: g.interests ? `Expert en : ${g.interests}` : g.bio || "",
-      image: `https://i.pravatar.cc/150?u=${g.id}`,
-      isVerified: g.isVerified,
-    }));
-    return feedGuidesSchema.parse(guides);
   },
 };
 

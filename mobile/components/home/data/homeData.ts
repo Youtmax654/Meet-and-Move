@@ -1,5 +1,4 @@
 import type {
-  Guide,
   TopRatedActivity,
   UpcomingActivity,
 } from "@/features/home/schemas/feed.schema";
@@ -57,24 +56,5 @@ export const weeklyTopRated: TopRatedActivity[] = [
     image:
       "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1200&q=80",
     isFeatured: false,
-  },
-];
-
-export const nearbyGuides: Guide[] = [
-  {
-    id: "1",
-    name: "Sarah Thompson",
-    details: "Expert en : Gastronomie, Histoire",
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
-    isVerified: true,
-  },
-  {
-    id: "2",
-    name: "James Miller",
-    details: "Expert en : Vie nocturne, Musique",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
-    isVerified: true,
   },
 ];

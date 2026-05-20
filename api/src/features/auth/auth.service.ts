@@ -1,13 +1,13 @@
 import { getDb } from "../../db";
-import { users } from "../../db/schema";
+import { user } from "../../db/schema";
 
 const authService = {
   getAllUsers: async () => {
-    return getDb().select().from(users);
+    return getDb().select().from(user);
   },
 
   getUserById: async (id: string) => {
-    return getDb().query.users.findFirst({
+    return getDb().query.user.findFirst({
       where: (users, { eq }) => eq(users.id, id),
     });
   },

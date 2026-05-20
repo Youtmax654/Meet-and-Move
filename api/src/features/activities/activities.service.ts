@@ -6,7 +6,7 @@ import {
   chatMembers,
   chats,
   interests,
-  users,
+  user,
 } from "../../db/schema";
 import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
 import {
@@ -23,9 +23,9 @@ const activitiesService = {
       .select({
         activity: activities,
         host: {
-          id: users.id,
-          username: users.username,
-          bio: users.bio,
+          id: user.id,
+          username: user.name,
+          bio: user.bio,
         },
         category: {
           id: interests.id,
@@ -33,7 +33,7 @@ const activitiesService = {
         },
       })
       .from(activities)
-      .innerJoin(users, eq(activities.hostId, users.id))
+      .innerJoin(user, eq(activities.hostId, user.id))
       .leftJoin(interests, eq(activities.categoryId, interests.id))
       .where(eq(activities.id, id))
       .limit(1);
@@ -50,11 +50,11 @@ const activitiesService = {
     // Fetch the list of accepted participants
     const participantsListFiltered = await db
       .select({
-        id: users.id,
-        username: users.username,
+        id: user.id,
+        username: user.name,
       })
       .from(activityParticipants)
-      .innerJoin(users, eq(activityParticipants.userId, users.id))
+      .innerJoin(user, eq(activityParticipants.userId, user.id))
       .where(
         and(
           eq(activityParticipants.activityId, id),
@@ -199,8 +199,8 @@ const activitiesService = {
       .select({
         activity: activities,
         host: {
-          id: users.id,
-          username: users.username,
+          id: user.id,
+          username: user.name,
         },
         category: {
           id: interests.id,
@@ -209,7 +209,7 @@ const activitiesService = {
       })
       .from(activityParticipants)
       .innerJoin(activities, eq(activityParticipants.activityId, activities.id))
-      .innerJoin(users, eq(activities.hostId, users.id))
+      .innerJoin(user, eq(activities.hostId, user.id))
       .leftJoin(interests, eq(activities.categoryId, interests.id))
       .where(
         and(
@@ -292,18 +292,27 @@ const activitiesService = {
           description: payload.description ?? null,
           categoryId: payload.categoryId ?? null,
           specificDetails:
-            Object.keys(specificDetails).length > 0 ? specificDetails : null,
-          latitude: payload.latitude ?? null,
-          longitude: payload.longitude ?? null,
+            specificDetails && Object.keys(specificDetails).length > 0
+              ? specificDetails
+              : null,
+          latitude:
+            payload.latitude !== undefined && payload.latitude !== null
+              ? payload.latitude.toString()
+              : null,
+          longitude:
+            payload.longitude !== undefined && payload.longitude !== null
+              ? payload.longitude.toString()
+              : null,
           maxParticipants: payload.max_participants ?? null,
           minAge: payload.min_age ?? null,
           maxAge: payload.max_age ?? null,
           autoValidate: payload.auto_validate ?? true,
-          eventDate: payload.eventDate ?? null,
+          eventDate: payload.eventDate ? new Date(payload.eventDate) : null,
         })
         .returning({ id: activities.id });
 
       if (!createdActivity) {
+        tx.rollback();
         throw new Error("ACTIVITY_CREATE_FAILED");
       }
 
@@ -316,21 +325,23 @@ const activitiesService = {
         .returning({ id: chats.id });
 
       if (!createdChat) {
+        tx.rollback();
         throw new Error("CHAT_CREATE_FAILED");
       }
 
-      await tx.insert(activityParticipants).values({
-        activityId: createdActivity.id,
-        userId: hostId,
-        status: "accepted",
-        joinedAt: new Date(),
-      });
-
-      await tx.insert(chatMembers).values({
-        chatId: createdChat.id,
-        userId: hostId,
-        joinedAt: new Date(),
-      });
+      await Promise.all([
+        tx.insert(activityParticipants).values({
+          activityId: createdActivity.id,
+          userId: hostId,
+          status: "accepted",
+          joinedAt: new Date(),
+        }),
+        tx.insert(chatMembers).values({
+          chatId: createdChat.id,
+          userId: hostId,
+          joinedAt: new Date(),
+        }),
+      ]);
 
       return { activityId: createdActivity.id };
     });

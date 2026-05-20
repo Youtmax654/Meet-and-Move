@@ -5,8 +5,8 @@ import { getActivityImageUrl } from "../../utils/image";
 
 const usersService = {
   getUserById: async (id: string) => {
-    return getDb().query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, id),
+    return getDb().query.user.findFirst({
+      where: (user, { eq }) => eq(user.id, id),
     });
   },
 

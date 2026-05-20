@@ -14,7 +14,7 @@ const chatsService = {
         title: sql<string>`
           CASE WHEN (${schema.chats.type} = 'group') 
           THEN ${schema.activities.title} 
-          ELSE CAST(${schema.users.username} AS VARCHAR) 
+          ELSE CAST(${schema.user.name} AS VARCHAR) 
           END`,
         activityId: schema.chats.activityId,
         type: schema.chats.type,
@@ -51,7 +51,7 @@ const chatsService = {
           eq(schema.chats.type, "private"),
         ),
       )
-      .leftJoin(schema.users, eq(otherMembers.userId, schema.users.id))
+      .leftJoin(schema.user, eq(otherMembers.userId, schema.user.id))
       .where(eq(schema.chatMembers.userId, userId));
 
     const parsedResult = chatsSchema.parse(result);
@@ -64,13 +64,13 @@ const chatsService = {
       .select({
         id: schema.messages.id,
         senderId: schema.messages.senderId,
-        senderUsername: schema.users.username,
+        senderUsername: schema.user.name,
         content: schema.messages.content,
         sentAt: schema.messages.sentAt,
         isSelfMessage: eq(schema.messages.senderId, userId),
       })
       .from(schema.messages)
-      .rightJoin(schema.users, eq(schema.messages.senderId, schema.users.id))
+      .rightJoin(schema.user, eq(schema.messages.senderId, schema.user.id))
       .innerJoin(schema.chats, eq(schema.messages.chatId, schema.chats.id))
       .innerJoin(
         schema.chatMembers,
@@ -115,9 +115,9 @@ const chatsService = {
       .returning();
 
     const [user] = await getDb()
-      .select({ username: schema.users.username })
-      .from(schema.users)
-      .where(eq(schema.users.id, senderId));
+      .select({ username: schema.user.name })
+      .from(schema.user)
+      .where(eq(schema.user.id, senderId));
 
     return {
       ...message,

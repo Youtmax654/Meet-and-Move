@@ -11,6 +11,7 @@ import chatsRoute from "./features/chats/chats.routes";
 import feedRoute from "./features/feed/feed.route";
 import usersRoute from "./features/users/users.routes";
 import { authMiddleware } from "./middleware/auth";
+import { auth } from "./utils/auth";
 
 type AppEnv = {
   Bindings: {
@@ -49,6 +50,8 @@ app.use("*", async (c, next) => {
   // Using waitUntil allows the Worker to finish this task in the background without delaying the HTTP response.
   c.executionCtx.waitUntil(client.end());
 });
+
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 app.get("/", (c) => {
   return c.json({
