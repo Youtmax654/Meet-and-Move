@@ -18,33 +18,34 @@ import {
 // ==========================================
 
 export const user = pgTable("user", {
-  id: uuid("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   phoneNumber: text("phone_number").unique(),
   phoneVerified: boolean("phone_verified").default(false).notNull(),
   age: integer("age"),
-  gender: varchar("gender"), // 'M', 'F', 'NB', 'other', 'prefer_not_to_say'
+  gender: varchar("gender"),
   image: text("image"),
   bio: text("bio"),
-  meetcoinsBalance: text("meetcoins_balance").default("0").notNull(),
+  meetcoinsBalance: integer("meetcoins_balance").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });
 
 export const session = pgTable(
   "session",
   {
-    id: uuid("id").primaryKey(),
+    id: uuid("id").primaryKey().defaultRandom(),
     expiresAt: timestamp("expires_at").notNull(),
     token: text("token").notNull().unique(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
@@ -58,7 +59,7 @@ export const session = pgTable(
 export const account = pgTable(
   "account",
   {
-    id: uuid("id").primaryKey(),
+    id: uuid("id").primaryKey().defaultRandom(),
     accountId: uuid("account_id").notNull(),
     providerId: uuid("provider_id").notNull(),
     userId: uuid("user_id")
@@ -73,7 +74,8 @@ export const account = pgTable(
     password: text("password"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .defaultNow() // 🌟 Ajouté defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("account_userId_idx").on(table.userId)],
@@ -82,59 +84,26 @@ export const account = pgTable(
 export const verification = pgTable(
   "verification",
   {
-    id: uuid("id").primaryKey(),
+    id: uuid("id").primaryKey().defaultRandom(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
     expiresAt: timestamp("expires_at").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const userRelations = relations(user, ({ many }) => ({
-  sessions: many(session),
-  accounts: many(account),
-}));
-
-export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
-}));
-
-export const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
-}));
-
 // ==========================================
 // 🧑 USERS & INTERESTS
 // ==========================================
 
-// export const users = pgTable("users", {
-//   id: uuid("id").primaryKey().defaultRandom(),
-//   username: varchar("username").notNull(),
-//   email: varchar("email").unique().notNull(),
-//   age: integer("age"),
-//   gender: varchar("gender"), // 'M', 'F', 'NB', 'other', 'prefer_not_to_say'
-//   role: varchar("role"), // 'user', 'admin'
-//   bio: text("bio"),
-//   isVerified: boolean("is_verified").default(false),
-//   meetcoinsBalance: integer("meetcoins_balance").default(0),
-//   gamificationLevel: integer("gamification_level").default(1),
-//   createdAt: timestamp("created_at").defaultNow(),
-// });
-
 export const interests = pgTable("interests", {
   id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name"), // 'sport', 'food', 'voyage', 'nightlife', 'chill'
+  name: varchar("name"),
 });
 
 export const userInterests = pgTable(
@@ -142,10 +111,10 @@ export const userInterests = pgTable(
   {
     userId: uuid("user_id")
       .notNull()
-      .references(() => user.id),
+      .references(() => user.id, { onDelete: "cascade" }),
     interestId: uuid("interest_id")
       .notNull()
-      .references(() => interests.id),
+      .references(() => interests.id, { onDelete: "cascade" }),
   },
   (table) => [primaryKey({ columns: [table.userId, table.interestId] })],
 );
@@ -158,11 +127,13 @@ export const activities = pgTable("activities", {
   id: uuid("id").primaryKey().defaultRandom(),
   hostId: uuid("host_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   title: varchar("title").notNull(),
   description: text("description"),
-  categoryId: uuid("category_id").references(() => interests.id),
-  specificDetails: jsonb("specific_details"), // JSONB
+  categoryId: uuid("category_id").references(() => interests.id, {
+    onDelete: "set null",
+  }),
+  specificDetails: jsonb("specific_details"),
   latitude: decimal("latitude"),
   longitude: decimal("longitude"),
   maxParticipants: integer("max_participants"),
@@ -178,10 +149,10 @@ export const userFavoriteActivities = pgTable(
   {
     userId: uuid("user_id")
       .notNull()
-      .references(() => user.id),
+      .references(() => user.id, { onDelete: "cascade" }),
     activityId: uuid("activity_id")
       .notNull()
-      .references(() => activities.id),
+      .references(() => activities.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.activityId] })],
@@ -192,11 +163,11 @@ export const activityParticipants = pgTable(
   {
     activityId: uuid("activity_id")
       .notNull()
-      .references(() => activities.id),
+      .references(() => activities.id, { onDelete: "cascade" }),
     userId: uuid("user_id")
       .notNull()
-      .references(() => user.id),
-    status: varchar("status"), // 'pending', 'accepted', 'rejected', 'cancelled'
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: varchar("status").default("pending"), // 'pending', 'accepted', 'rejected', 'cancelled'
     joinedAt: timestamp("joined_at").defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.activityId, table.userId] })],
@@ -208,7 +179,9 @@ export const activityParticipants = pgTable(
 
 export const chats = pgTable("chats", {
   id: uuid("id").primaryKey().defaultRandom(),
-  activityId: uuid("activity_id").references(() => activities.id), // Nullable pour les chats privés
+  activityId: uuid("activity_id").references(() => activities.id, {
+    onDelete: "cascade",
+  }),
   type: varchar("type"), // 'group', 'private'
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -218,10 +191,10 @@ export const chatMembers = pgTable(
   {
     chatId: uuid("chat_id")
       .notNull()
-      .references(() => chats.id),
+      .references(() => chats.id, { onDelete: "cascade" }),
     userId: uuid("user_id")
       .notNull()
-      .references(() => user.id),
+      .references(() => user.id, { onDelete: "cascade" }),
     joinedAt: timestamp("joined_at").defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.chatId, table.userId] })],
@@ -231,10 +204,10 @@ export const messages = pgTable("messages", {
   id: uuid("id").primaryKey().defaultRandom(),
   chatId: uuid("chat_id")
     .notNull()
-    .references(() => chats.id),
+    .references(() => chats.id, { onDelete: "cascade" }),
   senderId: uuid("sender_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   content: text("content"),
   sentAt: timestamp("sent_at").defaultNow(),
 });
@@ -247,11 +220,116 @@ export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
     .notNull()
-    .references(() => user.id),
-  amount: integer("amount"),
+    .references(() => user.id, { onDelete: "cascade" }),
+  amount: integer("amount").notNull(),
   transactionType: varchar("transaction_type"), // 'purchase_coins', 'spend_activity', 'earn_reward'
   relatedActivityId: uuid("related_activity_id").references(
     () => activities.id,
+    { onDelete: "set null" },
   ),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// ==========================================
+// 🔗 DRIZZLE RELATIONS DEFINITIONS (🌟 AJOUTÉ)
+// ==========================================
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+  userInterests: many(userInterests),
+  hostedActivities: many(activities),
+  favoriteActivities: many(userFavoriteActivities),
+  participatingActivities: many(activityParticipants),
+  chatMemberships: many(chatMembers),
+  messagesSent: many(messages),
+  transactions: many(transactions),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, { fields: [session.userId], references: [user.id] }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, { fields: [account.userId], references: [user.id] }),
+}));
+
+export const interestsRelations = relations(interests, ({ many }) => ({
+  userInterests: many(userInterests),
+  activities: many(activities),
+}));
+
+export const userInterestsRelations = relations(userInterests, ({ one }) => ({
+  user: one(user, { fields: [userInterests.userId], references: [user.id] }),
+  interest: one(interests, {
+    fields: [userInterests.interestId],
+    references: [interests.id],
+  }),
+}));
+
+export const activitiesRelations = relations(activities, ({ one, many }) => ({
+  host: one(user, { fields: [activities.hostId], references: [user.id] }),
+  category: one(interests, {
+    fields: [activities.categoryId],
+    references: [interests.id],
+  }),
+  favoritedBy: many(userFavoriteActivities),
+  participants: many(activityParticipants),
+  chats: many(chats),
+  transactions: many(transactions),
+}));
+
+export const userFavoriteActivitiesRelations = relations(
+  userFavoriteActivities,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [userFavoriteActivities.userId],
+      references: [user.id],
+    }),
+    activity: one(activities, {
+      fields: [userFavoriteActivities.activityId],
+      references: [activities.id],
+    }),
+  }),
+);
+
+export const activityParticipantsRelations = relations(
+  activityParticipants,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityParticipants.activityId],
+      references: [activities.id],
+    }),
+    user: one(user, {
+      fields: [activityParticipants.userId],
+      references: [user.id],
+    }),
+  }),
+);
+
+export const chatsRelations = relations(chats, ({ one, many }) => ({
+  activity: one(activities, {
+    fields: [chats.activityId],
+    references: [activities.id],
+  }),
+  members: many(chatMembers),
+  messages: many(messages),
+}));
+
+export const chatMembersRelations = relations(chatMembers, ({ one }) => ({
+  chat: one(chats, { fields: [chatMembers.chatId], references: [chats.id] }),
+  user: one(user, { fields: [chatMembers.userId], references: [user.id] }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  chat: one(chats, { fields: [messages.chatId], references: [chats.id] }),
+  sender: one(user, { fields: [messages.senderId], references: [user.id] }),
+}));
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  user: one(user, { fields: [transactions.userId], references: [user.id] }),
+  activity: one(activities, {
+    fields: [transactions.relatedActivityId],
+    references: [activities.id],
+  }),
+}));

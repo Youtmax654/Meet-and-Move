@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Client } from "pg";
 
-import { dbContext } from "./db";
 import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
 import authRoute from "./features/auth/auth.routes";
@@ -12,6 +11,7 @@ import feedRoute from "./features/feed/feed.route";
 import usersRoute from "./features/users/users.routes";
 import { authMiddleware } from "./middleware/auth";
 import { auth } from "./utils/auth";
+import { dbContext } from "./db";
 
 type AppEnv = {
   Bindings: {
@@ -35,7 +35,14 @@ app.use("*", async (c, next) => {
 });
 
 app.use("*", async (c, next) => {
-  const client = new Client({ connectionString: c.env.POSTGRES_URL });
+  const postgresUrl = c.env.POSTGRES_URL;
+  if (!postgresUrl) {
+    throw new Error(
+      "POSTGRES_URL n'est pas défini dans les variables d'environnement.",
+    );
+  }
+
+  const client = new Client({ connectionString: postgresUrl });
   await client.connect();
 
   const db = drizzle(client, { schema });
@@ -46,9 +53,9 @@ app.use("*", async (c, next) => {
     await next();
   });
 
-  // Clean up: Ensure the database connection is closed after the response is sent.
-  // Using waitUntil allows the Worker to finish this task in the background without delaying the HTTP response.
-  c.executionCtx.waitUntil(client.end());
+  // // Clean up: Ensure the database connection is closed after the response is sent.
+  // // Using waitUntil allows the Worker to finish this task in the background without delaying the HTTP response.
+  // c.executionCtx.waitUntil(client.end());
 });
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
