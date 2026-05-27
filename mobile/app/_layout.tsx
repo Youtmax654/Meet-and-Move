@@ -16,6 +16,7 @@ import { config } from "../tamagui.config";
 
 export const unstable_settings = {
   anchor: "(tabs)",
+  initialRouteName: "index",
 };
 
 const queryClient = new QueryClient();
@@ -24,9 +25,10 @@ function RootLayoutContent() {
   return (
     <>
       <Stack>
+        {/* <Stack.Screen name="auth" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="experience/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen
           name="modal"
           options={{ presentation: "modal", title: "Modal" }}

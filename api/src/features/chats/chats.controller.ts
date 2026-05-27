@@ -3,13 +3,14 @@ import { streamSSE } from "hono/streaming";
 import { createSubscriber, publishToRedis } from "../../db/redis";
 import { chatIdParamsSchema, sendMessageBodySchema } from "./chats.schema";
 import chatsService from "./chats.service";
+import { parseBody, parseParams, requireUserId } from "../../utils/http";
 
 export const getChats = async (c: Context) => {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
   const chats = await chatsService.getChats(userId);
 
@@ -17,17 +18,15 @@ export const getChats = async (c: Context) => {
 };
 
 export const getChatMessagesById = async (c: Context) => {
-  const userId = c.get("userId");
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
-  const paramsParsed = chatIdParamsSchema.safeParse(c.req.param());
-  if (!paramsParsed.success) {
-    return c.json(
-      { error: "Invalid params", details: paramsParsed.error.issues },
-      400,
-    );
+  const paramsParsed = parseParams(c, chatIdParamsSchema);
+  if (!paramsParsed.ok) {
+    return paramsParsed.response;
   }
 
   const { id } = paramsParsed.data;
@@ -38,25 +37,21 @@ export const getChatMessagesById = async (c: Context) => {
 };
 
 export const sendMessage = async (c: Context) => {
-  const userId = c.get("userId");
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
-  const paramsParsed = chatIdParamsSchema.safeParse(c.req.param());
-  if (!paramsParsed.success) {
-    return c.json(
-      { error: "Invalid params", details: paramsParsed.error.issues },
-      400,
-    );
+  const paramsParsed = parseParams(c, chatIdParamsSchema);
+  if (!paramsParsed.ok) {
+    return paramsParsed.response;
   }
 
   const { id: chatId } = paramsParsed.data;
-  const body = await c.req.json();
-
-  const parsed = sendMessageBodySchema.safeParse(body);
-  if (!parsed.success) {
-    return c.json({ error: "Invalid body", details: parsed.error.issues }, 400);
+  const parsed = await parseBody(c, sendMessageBodySchema);
+  if (!parsed.ok) {
+    return parsed.response;
   }
 
   const { content } = parsed.data;
@@ -75,17 +70,15 @@ export const sendMessage = async (c: Context) => {
 };
 
 export const streamMessages = async (c: Context) => {
-  const userId = c.get("userId");
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
-  const paramsParsed = chatIdParamsSchema.safeParse(c.req.param());
-  if (!paramsParsed.success) {
-    return c.json(
-      { error: "Invalid params", details: paramsParsed.error.issues },
-      400,
-    );
+  const paramsParsed = parseParams(c, chatIdParamsSchema);
+  if (!paramsParsed.ok) {
+    return paramsParsed.response;
   }
 
   const { id: chatId } = paramsParsed.data;

@@ -7,22 +7,22 @@ export const activitySchema = z.object({
   image: z.string().optional(),
   price: z.number().nonnegative().nullable().optional(),
   difficulty: z.string().nullable().optional(),
-  duration_hours: z.number().nullable().optional(),
+  durationHours: z.number().nullable().optional(),
   latitude: z.union([z.number().min(-90).max(90), z.string()]).nullable(),
   longitude: z.union([z.number().min(-180).max(180), z.string()]).nullable(),
-  max_participants: z.number().int().positive().nullable(),
+  maxParticipants: z.number().int().positive().nullable(),
   enrolledCount: z.number(),
   participants: z.array(
     z.object({
       id: z.uuid(),
-      username: z.string(),
+      name: z.string(),
       avatar: z.string(),
     }),
   ),
   chatId: z.uuid().optional(),
   host: z.object({
     id: z.uuid(),
-    username: z.string(),
+    name: z.string(),
     bio: z.string().nullable(),
     avatar: z.string(),
   }),
@@ -32,7 +32,7 @@ export const activitySchema = z.object({
       name: z.string(),
     })
     .nullable(),
-  price_breakdown: z
+  priceBreakdown: z
     .array(
       z.object({
         label: z.string(),

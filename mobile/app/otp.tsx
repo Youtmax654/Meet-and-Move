@@ -3,6 +3,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { YStack, Input, Button, Text } from "tamagui";
 import { authClient } from "@/lib/auth-client";
+import { getAuthErrorMessage } from "@/features/auth/auth.errors";
 
 export default function OtpScreen() {
   const params = useLocalSearchParams<{ email?: string }>();
@@ -18,12 +19,14 @@ export default function OtpScreen() {
     setError("");
     try {
       const result = await authClient.signIn.emailOtp({ email, otp });
-      if (result.error) {
+      if (result.error && result.error.code) {
         throw result.error;
       }
-      router.replace("/(tabs)/");
+      router.replace("/(tabs)");
     } catch (e: any) {
-      setError(e.message || "Code invalide");
+      setError(
+        getAuthErrorMessage(e.code ? e.code : undefined) || "Code invalide",
+      );
     } finally {
       setLoading(false);
     }
@@ -34,10 +37,10 @@ export default function OtpScreen() {
       <YStack flex={1} justifyContent="center" paddingHorizontal={20} gap={16}>
         <YStack gap={8} alignItems="center">
           <Text fontSize={24} fontWeight="800" color="#1E2228">
-            Verification
+            Vérification
           </Text>
           <Text textAlign="center" color="#5B5C5B" fontSize={14}>
-            Saisissez le code envoye a {email}
+            Saisissez le code envoyé à {email}
           </Text>
         </YStack>
 
@@ -71,7 +74,7 @@ export default function OtpScreen() {
           pressStyle={{ opacity: 0.9 }}
         >
           <Button.Text color="#FFFFFF" fontWeight="700">
-            {loading ? "Verification..." : "Verifier"}
+            {loading ? "Vérification..." : "Vérifier"}
           </Button.Text>
         </Button>
       </YStack>

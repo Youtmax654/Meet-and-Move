@@ -24,7 +24,7 @@ const activitiesService = {
         activity: activities,
         host: {
           id: user.id,
-          username: user.name,
+          name: user.name,
           bio: user.bio,
         },
         category: {
@@ -51,7 +51,7 @@ const activitiesService = {
     const participantsListFiltered = await db
       .select({
         id: user.id,
-        username: user.name,
+        name: user.name,
       })
       .from(activityParticipants)
       .innerJoin(user, eq(activityParticipants.userId, user.id))
@@ -86,10 +86,10 @@ const activitiesService = {
         getActivityImageUrl(row.category?.name || undefined, row.activity.id),
       price: details.price,
       difficulty: details.difficulty,
-      duration_hours: details.duration_hours,
+      durationHours: details.durationHours,
       latitude: row.activity.latitude,
       longitude: row.activity.longitude,
-      max_participants: row.activity.maxParticipants,
+      maxParticipants: row.activity.maxParticipants,
       enrolledCount: participantsWithAvatars.length,
       participants: participantsWithAvatars,
       chatId,
@@ -98,7 +98,7 @@ const activitiesService = {
         avatar: getAvatarUrl(row.host.id),
       },
       category: normalizedCategory,
-      price_breakdown: details.price_breakdown || [],
+      priceBreakdown: details.priceBreakdown || [],
       eventDate: row.activity.eventDate,
     });
   },
@@ -200,7 +200,7 @@ const activitiesService = {
         activity: activities,
         host: {
           id: user.id,
-          username: user.name,
+          name: user.name,
         },
         category: {
           id: interests.id,
@@ -249,7 +249,7 @@ const activitiesService = {
           price: details.price,
           latitude: row.activity.latitude,
           longitude: row.activity.longitude,
-          max_participants: row.activity.maxParticipants,
+          maxParticipants: row.activity.maxParticipants,
           enrolledCount: participantsList.length,
           host: row.host,
           category: normalizedCategory,
@@ -257,7 +257,7 @@ const activitiesService = {
           coverImage:
             details.coverImage ||
             "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=1200&q=80",
-          locationCity: details.locationCity || "Localité",
+          locationCity: details.locationCity || "Localite",
           chatId,
         };
       }),
@@ -271,9 +271,9 @@ const activitiesService = {
     const specificDetailsRaw = {
       price: payload.price ?? undefined,
       difficulty: payload.difficulty ?? undefined,
-      duration_hours: payload.duration_hours ?? undefined,
+      durationHours: payload.durationHours ?? undefined,
       image: payload.image ?? undefined,
-      price_breakdown: payload.price_breakdown ?? undefined,
+      priceBreakdown: payload.priceBreakdown ?? undefined,
       coverImage: payload.coverImage ?? undefined,
       locationCity: payload.locationCity ?? undefined,
     };
@@ -303,10 +303,10 @@ const activitiesService = {
             payload.longitude !== undefined && payload.longitude !== null
               ? payload.longitude.toString()
               : null,
-          maxParticipants: payload.max_participants ?? null,
-          minAge: payload.min_age ?? null,
-          maxAge: payload.max_age ?? null,
-          autoValidate: payload.auto_validate ?? true,
+          maxParticipants: payload.maxParticipants ?? null,
+          minAge: payload.minAge ?? null,
+          maxAge: payload.maxAge ?? null,
+          autoValidate: payload.autoValidate ?? true,
           eventDate: payload.eventDate ? new Date(payload.eventDate) : null,
         })
         .returning({ id: activities.id });

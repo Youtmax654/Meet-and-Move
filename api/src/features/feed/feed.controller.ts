@@ -1,6 +1,6 @@
-import { Context } from "hono";
-import { mapActivityToCard } from "./activities.mapper";
+import type { Context } from "hono";
 import feedService from "./feed.service";
+import { getErrorMessage } from "../../utils/errors";
 
 export const getAllActivities = async (c: Context) => {
   try {
@@ -10,10 +10,10 @@ export const getAllActivities = async (c: Context) => {
       return c.json([], 200);
     }
 
-    const mapped = activities.map(mapActivityToCard);
-    return c.json(mapped);
-  } catch (error: any) {
+    return c.json(activities);
+  } catch (error: unknown) {
     console.error("Error fetching activities:", error);
-    return c.json({ error: error.message || String(error) }, 500);
+    const message = getErrorMessage(error) ?? String(error);
+    return c.json({ error: message }, 500);
   }
 };

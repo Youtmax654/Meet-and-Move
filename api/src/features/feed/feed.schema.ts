@@ -2,14 +2,14 @@ import { z } from "zod";
 
 const participantSchema = z.object({
   id: z.uuid(),
-  username: z.string(),
+  name: z.string(),
 });
 
 const hostSchema = z.object({
   id: z.uuid(),
-  username: z.string(),
+  name: z.string(),
   bio: z.string().nullable(),
-  isVerified: z.boolean().nullable(),
+  emailVerified: z.boolean(),
 });
 
 const categorySchema = z
@@ -29,20 +29,19 @@ export const feedActivitySchema = z.object({
   id: z.uuid(),
   title: z.string(),
   description: z.string().nullable(),
-  event_date: z.coerce.date().nullable(),
-  isHostVerified: z.boolean().nullable(),
+  eventDate: z.coerce.date().nullable(),
   price: z.number().nonnegative().nullable().optional(),
   difficulty: z.string().nullable().optional(),
-  duration_hours: z.number().nullable().optional(),
+  durationHours: z.number().nullable().optional(),
   latitude: z.union([z.number().min(-90).max(90), z.string()]).nullable(),
   longitude: z.union([z.number().min(-180).max(180), z.string()]).nullable(),
-  max_participants: z.number().int().positive().nullable(),
+  maxParticipants: z.number().int().positive().nullable(),
   enrolledCount: z.number(),
   participants: z.array(participantSchema),
   host: hostSchema,
   category: categorySchema,
   image: z.string().optional(),
-  price_breakdown: z.array(priceBreakdownSchema),
+  priceBreakdown: z.array(priceBreakdownSchema),
 });
 
 export const feedActivitiesSchema = z.array(feedActivitySchema);

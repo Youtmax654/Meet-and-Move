@@ -1,14 +1,14 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { activityIdParamsSchema, createActivityBodySchema } from "./schemas";
 import activitiesService from "./activities.service";
+import { getErrorCode } from "../../utils/errors";
+import { mapJoinActivityError } from "./activities.errors";
+import { parseBody, parseParams, requireUserId } from "../../utils/http";
 
 export const getActivity = async (c: Context) => {
-  const paramsParsed = activityIdParamsSchema.safeParse(c.req.param());
-  if (!paramsParsed.success) {
-    return c.json(
-      { error: "Invalid params", details: paramsParsed.error.issues },
-      400,
-    );
+  const paramsParsed = parseParams(c, activityIdParamsSchema);
+  if (!paramsParsed.ok) {
+    return paramsParsed.response;
   }
 
   const { id } = paramsParsed.data;
@@ -28,39 +28,29 @@ export const getActivity = async (c: Context) => {
 };
 
 export const joinActivity = async (c: Context) => {
-  const paramsParsed = activityIdParamsSchema.safeParse(c.req.param());
-  if (!paramsParsed.success) {
-    return c.json(
-      { error: "Invalid params", details: paramsParsed.error.issues },
-      400,
-    );
+  const paramsParsed = parseParams(c, activityIdParamsSchema);
+  if (!paramsParsed.ok) {
+    return paramsParsed.response;
   }
 
-  // User must be authenticated to join an activity
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
   const { id: activityId } = paramsParsed.data;
 
   try {
     const result = await activitiesService.joinActivity(activityId, userId);
     return c.json(result);
-  } catch (error: any) {
-    // 23505 = unique constraint violation (already joined), 23503 = foreign key violation (activity not found)
-    if (error.message === "ALREADY_JOINED" || error.code === "23505") {
-      return c.json({ error: "Tu as déjà rejoint cette activité !" }, 409);
-    }
-    if (error.message === "ACTIVITY_NOT_FOUND") {
-      return c.json({ error: "Activité introuvable" }, 404);
-    }
-    if (error.message === "ACTIVITY_FULL") {
-      return c.json({ error: "Activité complète" }, 409);
-    }
-    if (error.code === "23503") {
-      return c.json({ error: "Activité introuvable" }, 404);
+  } catch (error: unknown) {
+    const mapped = mapJoinActivityError(error);
+    if (mapped) {
+      return c.json(
+        { error: mapped.message, errorKey: mapped.key },
+        mapped.status,
+      );
     }
     console.error("Error joining activity:", error);
     return c.json({ error: "Internal Server Error" }, 500);
@@ -68,11 +58,11 @@ export const joinActivity = async (c: Context) => {
 };
 
 export const getJoinedActivities = async (c: Context) => {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
   try {
     const activities = await activitiesService.getUserJoinedActivities(userId);
@@ -84,16 +74,15 @@ export const getJoinedActivities = async (c: Context) => {
 };
 
 export const createActivity = async (c: Context) => {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
-  const body = await c.req.json();
-  const parsed = createActivityBodySchema.safeParse(body);
-  if (!parsed.success) {
-    return c.json({ error: "Invalid body", details: parsed.error.issues }, 400);
+  const parsed = await parseBody(c, createActivityBodySchema);
+  if (!parsed.ok) {
+    return parsed.response;
   }
 
   try {
@@ -107,9 +96,9 @@ export const createActivity = async (c: Context) => {
     }
 
     return c.json(activity, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // 23503 = the provided category ID doesn't exist
-    if (error.code === "23503") {
+    if (getErrorCode(error) === "23503") {
       return c.json({ error: "Category not found" }, 404);
     }
     console.error("Error creating activity:", error);

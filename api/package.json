@@ -7,18 +7,20 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
+    "@better-auth/expo": "^1.6.11",
     "better-auth": "^1.6.11",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.9",
     "ioredis": "^5.10.1",
     "pg": "^8.20.0",
+    "resend": "^6.12.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
-    "wrangler": "^4.4.0"
+    "wrangler": "^4.94.0"
   }
 }

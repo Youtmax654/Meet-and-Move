@@ -1,17 +1,17 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { Client } from "pg";
 
 import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
-import authRoute from "./features/auth/auth.routes";
 import chatsRoute from "./features/chats/chats.routes";
-import feedRoute from "./features/feed/feed.route";
 import usersRoute from "./features/users/users.routes";
 import { authMiddleware } from "./middleware/auth";
-import { auth } from "./utils/auth";
-import { dbContext } from "./db";
+import { createAuth } from "./utils/auth";
+import { dbContext, getDb } from "./db";
+import feedRoute from "./features/feed/feed.routes";
+import { cors } from "hono/cors";
+import authRoute from "./features/auth/auth.routes";
 
 type AppEnv = {
   Bindings: {
@@ -25,14 +25,7 @@ type AppEnv = {
 const app = new Hono<AppEnv>();
 
 app.use("*", cors());
-app.use("*", async (c, next) => {
-  const url = new URL(c.req.url);
-  const publicPaths = ["/auth"];
-  if (publicPaths.some((path) => url.pathname.startsWith(path))) {
-    return next();
-  }
-  return authMiddleware(c, next);
-});
+app.use("*", authMiddleware);
 
 app.use("*", async (c, next) => {
   const postgresUrl = c.env.POSTGRES_URL;
@@ -58,7 +51,9 @@ app.use("*", async (c, next) => {
   // c.executionCtx.waitUntil(client.end());
 });
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+app.on(["POST", "GET"], "/auth/*", (c) =>
+  createAuth(getDb()).handler(c.req.raw),
+);
 
 app.get("/", (c) => {
   return c.json({

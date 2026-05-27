@@ -1,10 +1,10 @@
-import { Context, Next } from "hono";
+import type { Context, Next } from "hono";
 
 export const authMiddleware = async (c: Context, next: Next) => {
   const path = c.req.path;
 
   // Skip auth for base route and auth routes
-  if (path === "/" || path.startsWith("/auth/")) {
+  if (path === "/auth" || path.startsWith("/auth/")) {
     return await next();
   }
 

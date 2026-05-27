@@ -1,13 +1,14 @@
 import type { Context } from "hono";
 import { userActivitiesSchema, userPublicSchema } from "./users.schema";
 import usersService from "./users.service";
+import { requireUserId } from "../../utils/http";
 
 export const getCurrentUser = async (c: Context) => {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
   try {
     const user = await usersService.getUserById(userId);
@@ -24,11 +25,11 @@ export const getCurrentUser = async (c: Context) => {
 };
 
 export const getCurrentUserActivities = async (c: Context) => {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized" }, 401);
+  const authResult = requireUserId(c);
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const { userId } = authResult;
 
   try {
     const activities = await usersService.getUserActivities(userId);

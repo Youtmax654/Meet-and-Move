@@ -17,7 +17,7 @@ export default function AuthIndexScreen() {
         email,
         type: "sign-in",
       });
-      router.push({ pathname: "/auth/otp", params: { email } });
+      router.push({ pathname: "/otp", params: { email } });
     } catch (err) {
       console.error(err);
     } finally {
@@ -38,18 +38,13 @@ export default function AuthIndexScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F7F6F5" }}>
-      <YStack
-        flex={1}
-        justifyContent="center"
-        paddingHorizontal={20}
-        gap={16}
-      >
+      <YStack flex={1} justifyContent="center" paddingHorizontal={20} gap={16}>
         <YStack gap={8} alignItems="center">
           <Text fontSize={28} fontWeight="800" color="#1E2228">
             Connexion
           </Text>
           <Text fontSize={14} color="#5B5C5B" textAlign="center">
-            Accedez a votre compte pour rejoindre vos activites.
+            Accédez à votre compte pour rejoindre vos activités.
           </Text>
         </YStack>
 

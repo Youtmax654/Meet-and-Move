@@ -64,7 +64,7 @@ const chatsService = {
       .select({
         id: schema.messages.id,
         senderId: schema.messages.senderId,
-        senderUsername: schema.user.name,
+        senderName: schema.user.name,
         content: schema.messages.content,
         sentAt: schema.messages.sentAt,
         isSelfMessage: eq(schema.messages.senderId, userId),
@@ -115,13 +115,13 @@ const chatsService = {
       .returning();
 
     const [user] = await getDb()
-      .select({ username: schema.user.name })
+      .select({ name: schema.user.name })
       .from(schema.user)
       .where(eq(schema.user.id, senderId));
 
     return {
       ...message,
-      senderUsername: user?.username || "Unknown",
+      senderName: user?.name || "Unknown",
     };
   },
 };
