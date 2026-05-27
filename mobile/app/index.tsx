@@ -3,10 +3,12 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { YStack, XStack, Input, Button, Text } from "tamagui";
 import { authClient } from "@/lib/auth-client";
+import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 
 export default function AuthIndexScreen() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const { checkingSession } = useAuthRedirect();
   const router = useRouter();
 
   const handleEmailSubmit = async () => {
@@ -35,6 +37,10 @@ export default function AuthIndexScreen() {
       console.error(err);
     }
   };
+
+  if (checkingSession) {
+    return <SafeAreaView style={{ flex: 1, backgroundColor: "#F7F6F5" }} />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F7F6F5" }}>

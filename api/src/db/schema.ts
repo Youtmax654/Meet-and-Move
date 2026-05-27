@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  date,
   decimal,
   index,
   integer,
@@ -24,7 +25,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   phoneNumber: text("phone_number").unique(),
   phoneVerified: boolean("phone_verified").default(false).notNull(),
-  age: integer("age"),
+  birthDate: date("birth_date"),
   gender: varchar("gender"),
   image: text("image"),
   bio: text("bio"),

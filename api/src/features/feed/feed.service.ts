@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import { getDb } from "../../db";
 import {
   activities,
   activityParticipants,
@@ -7,11 +6,10 @@ import {
   user,
 } from "../../db/schema";
 import { feedActivitiesSchema } from "./feed.schema";
+import { db } from "../../db";
 
 const feedService = {
   getAllActivities: async () => {
-    const db = getDb();
-
     const result = await db
       .select({
         activity: activities,

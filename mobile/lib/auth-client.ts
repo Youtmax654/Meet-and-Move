@@ -7,6 +7,9 @@ const baseURL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8787";
 
 export const authClient = createAuthClient({
   baseURL: `${baseURL}/auth`,
+  fetchOptions: {
+    credentials: "include",
+  },
   plugins: [
     expoClient({
       scheme: "meetandmove",

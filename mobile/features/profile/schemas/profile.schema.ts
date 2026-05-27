@@ -18,17 +18,19 @@ export const userActivitySchema = z.object({
 export const userActivitiesSchema = z.array(userActivitySchema);
 
 export const profileSchema = z.object({
-  id: z.string().uuid(),
-  username: z.string(),
-  email: z.string().email(),
-  age: z.number().int().nullable(),
+  id: z.uuid(),
+  name: z.string(),
+  email: z.email(),
+  emailVerified: z.boolean(),
+  phoneNumber: z.string().nullable(),
+  phoneVerified: z.boolean(),
+  birthDate: z.coerce.date().nullable(),
   gender: z.string().nullable(),
-  role: z.string().nullable(),
+  image: z.url().nullable(),
   bio: z.string().nullable(),
-  isVerified: z.boolean().nullable(),
-  meetcoinsBalance: z.number().int().nullable(),
-  gamificationLevel: z.number().int().nullable(),
-  createdAt: z.coerce.date().nullable(),
+  meetcoinsBalance: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 export type ProfileData = z.infer<typeof profileSchema>;

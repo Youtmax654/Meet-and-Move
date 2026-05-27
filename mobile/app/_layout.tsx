@@ -10,7 +10,6 @@ import { StatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import "react-native-reanimated";
 import { TamaguiProvider } from "tamagui";
-import { DebugUserPicker } from "../components/debug/debug-user-picker";
 import { ToastProvider } from "../context/toast-context";
 import { config } from "../tamagui.config";
 
@@ -34,7 +33,6 @@ function RootLayoutContent() {
           options={{ presentation: "modal", title: "Modal" }}
         />
       </Stack>
-      <DebugUserPicker />
       <StatusBar style="auto" />
     </>
   );

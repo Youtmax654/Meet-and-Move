@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import { getDb } from "../../db";
 import {
   activities,
   activityParticipants,
@@ -14,11 +13,10 @@ import {
   joinedActivitiesSchema,
   type CreateActivityBody,
 } from "./schemas";
+import { db } from "../../db";
 
 const activitiesService = {
   getActivityById: async (id: string) => {
-    const db = getDb();
-
     const result = await db
       .select({
         activity: activities,
@@ -107,8 +105,6 @@ const activitiesService = {
     activityId: string,
     userId: string,
   ): Promise<{ success: boolean }> => {
-    const db = getDb();
-
     const activityResult = await db
       .select({ maxParticipants: activities.maxParticipants })
       .from(activities)
@@ -193,8 +189,6 @@ const activitiesService = {
   },
 
   getUserJoinedActivities: async (userId: string) => {
-    const db = getDb();
-
     const result = await db
       .select({
         activity: activities,
@@ -266,8 +260,6 @@ const activitiesService = {
   },
 
   createActivity: async (hostId: string, payload: CreateActivityBody) => {
-    const db = getDb();
-
     const specificDetailsRaw = {
       price: payload.price ?? undefined,
       difficulty: payload.difficulty ?? undefined,

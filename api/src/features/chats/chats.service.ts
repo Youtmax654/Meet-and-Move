@@ -1,6 +1,6 @@
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { getDb } from "../../db";
+import { db } from "../../db";
 import * as schema from "../../db/schema";
 import { chatsSchema, messagesSchema } from "./chats.schema";
 
@@ -8,7 +8,7 @@ const chatsService = {
   getChats: async (userId: string) => {
     const otherMembers = alias(schema.chatMembers, "otherMembers");
 
-    const result = await getDb()
+    const result = await db
       .select({
         id: schema.chats.id,
         title: sql<string>`
@@ -60,7 +60,7 @@ const chatsService = {
   },
 
   getChatMessagesById: async (userId: string, id: string) => {
-    const result = await getDb()
+    const result = await db
       .select({
         id: schema.messages.id,
         senderId: schema.messages.senderId,
@@ -89,7 +89,7 @@ const chatsService = {
   },
 
   checkMembership: async (chatId: string, userId: string) => {
-    const [membership] = await getDb()
+    const [membership] = await db
       .select({ id: schema.chatMembers.chatId })
       .from(schema.chatMembers)
       .where(
@@ -109,12 +109,12 @@ const chatsService = {
       throw new Error("User is not a member of this chat");
     }
 
-    const [message] = await getDb()
+    const [message] = await db
       .insert(schema.messages)
       .values({ chatId, senderId, content })
       .returning();
 
-    const [user] = await getDb()
+    const [user] = await db
       .select({ name: schema.user.name })
       .from(schema.user)
       .where(eq(schema.user.id, senderId));

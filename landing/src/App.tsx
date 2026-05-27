@@ -1,4 +1,6 @@
 import { Box } from "@chakra-ui/react";
+import { FaqSection } from "./components/FaqSection";
+import { FeatureShowcaseSection } from "./components/FeatureShowcaseSection";
 import { FeaturesSection } from "./components/FeaturesSection";
 import { HeroSection } from "./components/HeroSection";
 import { LaunchCtaSection } from "./components/LaunchCtaSection";
@@ -13,6 +15,8 @@ function App() {
       <Box as="main">
         <HeroSection />
         <FeaturesSection />
+        <FeatureShowcaseSection />
+        <FaqSection />
         <LaunchCtaSection />
         <SiteFooter />
       </Box>

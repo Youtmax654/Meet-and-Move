@@ -15,6 +15,7 @@
   "scripts": {
     "start:mobile": "cd mobile && npm run start",
     "start:api": "cd api && npm run dev",
+    "start:landing": "cd landing && npm run dev",
     "db:start": "cd db && docker compose up",
     "db:stop": "cd db && docker compose down",
     "db:prune": "cd db && docker compose down -v",

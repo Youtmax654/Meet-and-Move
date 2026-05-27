@@ -25,10 +25,10 @@ function getEmailConfig(): EmailConfig {
   };
 }
 
-function getEmailCopy(type: OtpEmailType) {
+function getEmailCopy(type: OtpEmailType, otp?: string) {
   if (type === "sign-in") {
     return {
-      subject: "Votre code de connexion",
+      subject: `Votre code de connexion (${otp})`,
       preheader: "Utilisez ce code pour vous connecter.",
       heading: "Connexion",
       body: "Utilisez le code ci-dessous pour vous connecter. Ce code expire bientôt.",
@@ -62,7 +62,7 @@ export async function sendOtpEmail({ email, otp, type }: OtpEmailPayload) {
     return;
   }
 
-  const copy = getEmailCopy(type);
+  const copy = getEmailCopy(type, otp);
 
   const { data, error } = await resend.emails.send({
     from,
@@ -71,21 +71,6 @@ export async function sendOtpEmail({ email, otp, type }: OtpEmailPayload) {
     html: renderOtpEmail({ otp, content: copy }),
     text: `${copy.body}\n\n${otp}`,
   });
-
-  // const response = await fetch("https://api.resend.com/emails", {
-  //   method: "POST",
-  //   headers: {
-  //     Authorization: `Bearer ${apiKey}`,
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify({
-  //     from,
-  //     to: email,
-  //     subject: copy.subject,
-  //     html: buildHtml({ otp, type }),
-  //     text: `${copy.body}\n\n${otp}`,
-  //   }),
-  // });
 
   if (error) {
     console.error("Resend email failed:", error);
