@@ -1,22 +1,23 @@
-import { Context, Next } from "hono";
+import type { Context, Next } from "hono";
+import { auth } from "../utils/auth";
 
 export const authMiddleware = async (c: Context, next: Next) => {
-  const path = c.req.path;
+  console.debug("Raw cookies reçus par Hono :", c.req.header("cookie"));
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers,
+  });
+  console.debug("Session data:", session);
 
-  // Skip auth for base route and auth routes
-  if (path === "/" || path.startsWith("/auth/")) {
-    return await next();
+  if (!session) {
+    c.set("user", null);
+    c.set("session", null);
+    c.set("userId", null);
+    await next();
+    return;
   }
 
-  const userId = c.req.header("X-Debug-User-Id");
-
-  if (!userId) {
-    return c.json(
-      { error: "Non autorisé, veuillez vous connecter (Debug User Picker)." },
-      401,
-    );
-  }
-
-  c.set("userId", userId);
+  c.set("user", session.user);
+  c.set("session", session);
+  c.set("userId", session.user.id);
   await next();
 };

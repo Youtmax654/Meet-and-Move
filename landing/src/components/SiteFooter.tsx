@@ -1,11 +1,4 @@
-import {
-  Container,
-  Flex,
-  Heading,
-  HStack,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Container, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 
 export function SiteFooter() {
   return (
@@ -15,7 +8,7 @@ export function SiteFooter() {
         justify="space-between"
         gap={6}
       >
-        <Stack gap={2} maxW="300px">
+        <Stack gap={2} maxW="400px">
           <Heading size="md" color="#006666">
             Meet&Move
           </Heading>
@@ -23,13 +16,6 @@ export function SiteFooter() {
             © 2026 Meet&Move. Rencontrez, organisez, vivez.
           </Text>
         </Stack>
-        <HStack gap={6} flexWrap="wrap">
-          {"About Careers Privacy Terms Support".split(" ").map((label) => (
-            <Text key={label} fontSize="sm" color="#5B5C5B">
-              {label}
-            </Text>
-          ))}
-        </HStack>
       </Flex>
     </Container>
   );

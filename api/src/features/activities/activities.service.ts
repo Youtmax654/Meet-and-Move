@@ -1,12 +1,11 @@
 import { and, eq } from "drizzle-orm";
-import { getDb } from "../../db";
 import {
   activities,
   activityParticipants,
   chatMembers,
   chats,
   interests,
-  users,
+  user,
 } from "../../db/schema";
 import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
 import {
@@ -14,18 +13,17 @@ import {
   joinedActivitiesSchema,
   type CreateActivityBody,
 } from "./schemas";
+import { db } from "../../db";
 
 const activitiesService = {
   getActivityById: async (id: string) => {
-    const db = getDb();
-
     const result = await db
       .select({
         activity: activities,
         host: {
-          id: users.id,
-          username: users.username,
-          bio: users.bio,
+          id: user.id,
+          name: user.name,
+          bio: user.bio,
         },
         category: {
           id: interests.id,
@@ -33,7 +31,7 @@ const activitiesService = {
         },
       })
       .from(activities)
-      .innerJoin(users, eq(activities.hostId, users.id))
+      .innerJoin(user, eq(activities.hostId, user.id))
       .leftJoin(interests, eq(activities.categoryId, interests.id))
       .where(eq(activities.id, id))
       .limit(1);
@@ -50,11 +48,11 @@ const activitiesService = {
     // Fetch the list of accepted participants
     const participantsListFiltered = await db
       .select({
-        id: users.id,
-        username: users.username,
+        id: user.id,
+        name: user.name,
       })
       .from(activityParticipants)
-      .innerJoin(users, eq(activityParticipants.userId, users.id))
+      .innerJoin(user, eq(activityParticipants.userId, user.id))
       .where(
         and(
           eq(activityParticipants.activityId, id),
@@ -86,10 +84,10 @@ const activitiesService = {
         getActivityImageUrl(row.category?.name || undefined, row.activity.id),
       price: details.price,
       difficulty: details.difficulty,
-      duration_hours: details.duration_hours,
+      durationHours: details.durationHours,
       latitude: row.activity.latitude,
       longitude: row.activity.longitude,
-      max_participants: row.activity.maxParticipants,
+      maxParticipants: row.activity.maxParticipants,
       enrolledCount: participantsWithAvatars.length,
       participants: participantsWithAvatars,
       chatId,
@@ -98,7 +96,7 @@ const activitiesService = {
         avatar: getAvatarUrl(row.host.id),
       },
       category: normalizedCategory,
-      price_breakdown: details.price_breakdown || [],
+      priceBreakdown: details.priceBreakdown || [],
       eventDate: row.activity.eventDate,
     });
   },
@@ -107,8 +105,6 @@ const activitiesService = {
     activityId: string,
     userId: string,
   ): Promise<{ success: boolean }> => {
-    const db = getDb();
-
     const activityResult = await db
       .select({ maxParticipants: activities.maxParticipants })
       .from(activities)
@@ -193,14 +189,12 @@ const activitiesService = {
   },
 
   getUserJoinedActivities: async (userId: string) => {
-    const db = getDb();
-
     const result = await db
       .select({
         activity: activities,
         host: {
-          id: users.id,
-          username: users.username,
+          id: user.id,
+          name: user.name,
         },
         category: {
           id: interests.id,
@@ -209,7 +203,7 @@ const activitiesService = {
       })
       .from(activityParticipants)
       .innerJoin(activities, eq(activityParticipants.activityId, activities.id))
-      .innerJoin(users, eq(activities.hostId, users.id))
+      .innerJoin(user, eq(activities.hostId, user.id))
       .leftJoin(interests, eq(activities.categoryId, interests.id))
       .where(
         and(
@@ -249,7 +243,7 @@ const activitiesService = {
           price: details.price,
           latitude: row.activity.latitude,
           longitude: row.activity.longitude,
-          max_participants: row.activity.maxParticipants,
+          maxParticipants: row.activity.maxParticipants,
           enrolledCount: participantsList.length,
           host: row.host,
           category: normalizedCategory,
@@ -257,7 +251,7 @@ const activitiesService = {
           coverImage:
             details.coverImage ||
             "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=1200&q=80",
-          locationCity: details.locationCity || "Localité",
+          locationCity: details.locationCity || "Localite",
           chatId,
         };
       }),
@@ -266,14 +260,12 @@ const activitiesService = {
   },
 
   createActivity: async (hostId: string, payload: CreateActivityBody) => {
-    const db = getDb();
-
     const specificDetailsRaw = {
       price: payload.price ?? undefined,
       difficulty: payload.difficulty ?? undefined,
-      duration_hours: payload.duration_hours ?? undefined,
+      durationHours: payload.durationHours ?? undefined,
       image: payload.image ?? undefined,
-      price_breakdown: payload.price_breakdown ?? undefined,
+      priceBreakdown: payload.priceBreakdown ?? undefined,
       coverImage: payload.coverImage ?? undefined,
       locationCity: payload.locationCity ?? undefined,
     };
@@ -292,18 +284,27 @@ const activitiesService = {
           description: payload.description ?? null,
           categoryId: payload.categoryId ?? null,
           specificDetails:
-            Object.keys(specificDetails).length > 0 ? specificDetails : null,
-          latitude: payload.latitude ?? null,
-          longitude: payload.longitude ?? null,
-          maxParticipants: payload.max_participants ?? null,
-          minAge: payload.min_age ?? null,
-          maxAge: payload.max_age ?? null,
-          autoValidate: payload.auto_validate ?? true,
-          eventDate: payload.eventDate ?? null,
+            specificDetails && Object.keys(specificDetails).length > 0
+              ? specificDetails
+              : null,
+          latitude:
+            payload.latitude !== undefined && payload.latitude !== null
+              ? payload.latitude.toString()
+              : null,
+          longitude:
+            payload.longitude !== undefined && payload.longitude !== null
+              ? payload.longitude.toString()
+              : null,
+          maxParticipants: payload.maxParticipants ?? null,
+          minAge: payload.minAge ?? null,
+          maxAge: payload.maxAge ?? null,
+          autoValidate: payload.autoValidate ?? true,
+          eventDate: payload.eventDate ? new Date(payload.eventDate) : null,
         })
         .returning({ id: activities.id });
 
       if (!createdActivity) {
+        tx.rollback();
         throw new Error("ACTIVITY_CREATE_FAILED");
       }
 
@@ -316,21 +317,23 @@ const activitiesService = {
         .returning({ id: chats.id });
 
       if (!createdChat) {
+        tx.rollback();
         throw new Error("CHAT_CREATE_FAILED");
       }
 
-      await tx.insert(activityParticipants).values({
-        activityId: createdActivity.id,
-        userId: hostId,
-        status: "accepted",
-        joinedAt: new Date(),
-      });
-
-      await tx.insert(chatMembers).values({
-        chatId: createdChat.id,
-        userId: hostId,
-        joinedAt: new Date(),
-      });
+      await Promise.all([
+        tx.insert(activityParticipants).values({
+          activityId: createdActivity.id,
+          userId: hostId,
+          status: "accepted",
+          joinedAt: new Date(),
+        }),
+        tx.insert(chatMembers).values({
+          chatId: createdChat.id,
+          userId: hostId,
+          joinedAt: new Date(),
+        }),
+      ]);
 
       return { activityId: createdActivity.id };
     });

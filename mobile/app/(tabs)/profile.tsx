@@ -11,25 +11,21 @@ import { ProfileStatsRow } from "@/features/profile/components/ProfileStatsRow";
 import {
   ProfileErrorState,
   ProfileLoadingState,
-  ProfileNoUserState,
 } from "@/features/profile/components/ProfileStates";
 import {
   getCurrentUser,
   getCurrentUserActivities,
 } from "@/features/profile/profile.service";
-import { getUserId } from "@/lib/api";
 import { ProfileActivitiesGrid } from "@/features/profile/components/ProfileActivitiesGrid";
 
 export default function ProfilScreen() {
   const router = useRouter();
-  const userId = getUserId();
   const {
     data: profile,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["current-user", userId],
-    enabled: Boolean(userId),
+    queryKey: ["current-user"],
     queryFn: getCurrentUser,
   });
   const {
@@ -37,14 +33,9 @@ export default function ProfilScreen() {
     isLoading: isActivitiesLoading,
     isError: isActivitiesError,
   } = useQuery({
-    queryKey: ["current-user-activities", userId],
-    enabled: Boolean(userId),
+    queryKey: ["current-user-activities"],
     queryFn: getCurrentUserActivities,
   });
-
-  if (!userId) {
-    return <ProfileNoUserState />;
-  }
 
   if (isLoading) {
     return <ProfileLoadingState />;
@@ -84,8 +75,8 @@ export default function ProfilScreen() {
             <YStack px={16} mt={-36} gap={16}>
               <ProfileIdentityCard
                 avatarUrl={avatarUrl}
-                username={profile.username}
-                isVerified={profile.isVerified}
+                username={profile.name}
+                isVerified={profile.emailVerified}
                 email={profile.email}
                 levelLabel={levelLabel}
                 bio={profile.bio}

@@ -21,15 +21,6 @@ export const topRatedActivitySchema = z.object({
   isFeatured: z.boolean(),
 });
 
-export const nearbyGuideSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  details: z.string(),
-  image: z.string(),
-  isVerified: z.boolean().optional(),
-});
-
 export type Activity = z.infer<typeof homeFeedActivitySchema>;
 export type UpcomingActivity = Activity;
 export type TopRatedActivity = z.infer<typeof topRatedActivitySchema>;
-export type Guide = z.infer<typeof nearbyGuideSchema>;
