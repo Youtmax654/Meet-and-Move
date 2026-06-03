@@ -1,54 +1,33 @@
-import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { Client } from "pg";
 
-import { dbContext } from "./db";
-import * as schema from "./db/schema";
 import activitiesRoute from "./features/activities/activities.routes";
-import authRoute from "./features/auth/auth.routes";
 import chatsRoute from "./features/chats/chats.routes";
-import feedRoute from "./features/feed/feed.route";
 import usersRoute from "./features/users/users.routes";
 import { authMiddleware } from "./middleware/auth";
+import feedRoute from "./features/feed/feed.routes";
+import { cors } from "hono/cors";
+import { auth } from "./utils/auth";
+import { dbMiddleware } from "./middleware/db";
 
-type AppEnv = {
-  Bindings: {
-    POSTGRES_URL: string;
-  };
-  Variables: {
-    db: NodePgDatabase<typeof schema>;
-  };
-};
+type AppEnv = {};
 
 const app = new Hono<AppEnv>();
 
-app.use("*", cors());
-app.use("*", async (c, next) => {
-  const url = new URL(c.req.url);
-  const publicPaths = ["/auth"];
-  if (publicPaths.some((path) => url.pathname.startsWith(path))) {
-    return next();
-  }
-  return authMiddleware(c, next);
-});
+app.use(
+  "*",
+  cors({
+    origin: "http://localhost:8081",
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
+    credentials: true,
+  }),
+);
+app.use("*", dbMiddleware);
+app.use("*", authMiddleware);
 
-app.use("*", async (c, next) => {
-  const client = new Client({ connectionString: c.env.POSTGRES_URL });
-  await client.connect();
-
-  const db = drizzle(client, { schema });
-
-  // Wrap the application execution in the AsyncLocalStorage context
-  await dbContext.run(db, async () => {
-    // Downstream routes and services can now access 'db' using getDb() without prop drilling
-    await next();
-  });
-
-  // Clean up: Ensure the database connection is closed after the response is sent.
-  // Using waitUntil allows the Worker to finish this task in the background without delaying the HTTP response.
-  c.executionCtx.waitUntil(client.end());
-});
+app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
 
 app.get("/", (c) => {
   return c.json({
@@ -56,7 +35,6 @@ app.get("/", (c) => {
     message: "Welcome to the Meet and Move API",
   });
 });
-app.route("/auth", authRoute);
 
 app.route("/activities", activitiesRoute);
 app.route("/feed", feedRoute);

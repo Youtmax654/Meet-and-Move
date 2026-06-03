@@ -1,18 +1,17 @@
 import { eq } from "drizzle-orm";
-import { getDb } from "../../db";
-import { activities, interests } from "../../db/schema";
+import { db } from "../../db";
+import { activities, interests, user } from "../../db/schema";
 import { getActivityImageUrl } from "../../utils/image";
+import type { UpdateUserBody } from "./users.schema";
 
 const usersService = {
   getUserById: async (id: string) => {
-    return getDb().query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, id),
+    return db.query.user.findFirst({
+      where: (user, { eq }) => eq(user.id, id),
     });
   },
 
   getUserActivities: async (userId: string) => {
-    const db = getDb();
-
     const result = await db
       .select({
         activity: activities,
@@ -42,6 +41,22 @@ const usersService = {
         category: normalizedCategory,
       };
     });
+  },
+
+  updateUserProfile: async (userId: string, payload: UpdateUserBody) => {
+    const [updatedUser] = await db
+      .update(user)
+      .set({
+        name: payload.name,
+        birthDate: payload.birthDate.toISOString(),
+        gender: payload.gender,
+        image: payload.image ?? null,
+        bio: payload.bio ?? null,
+      })
+      .where(eq(user.id, userId))
+      .returning();
+
+    return updatedUser ?? null;
   },
 };
 

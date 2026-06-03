@@ -1,26 +1,23 @@
-import { sql as drizzleSql, eq } from "drizzle-orm";
-import { getDb } from "../../db";
+import { eq } from "drizzle-orm";
 import {
   activities,
   activityParticipants,
   interests,
-  userInterests,
-  users,
+  user,
 } from "../../db/schema";
-import { feedActivitiesSchema, feedGuidesSchema } from "./feed.schema";
+import { feedActivitiesSchema } from "./feed.schema";
+import { db } from "../../db";
 
 const feedService = {
   getAllActivities: async () => {
-    const db = getDb();
-
     const result = await db
       .select({
         activity: activities,
         host: {
-          id: users.id,
-          username: users.username,
-          bio: users.bio,
-          isVerified: users.isVerified,
+          id: user.id,
+          name: user.name,
+          bio: user.bio,
+          emailVerified: user.emailVerified,
         },
         category: {
           id: interests.id,
@@ -28,7 +25,7 @@ const feedService = {
         },
       })
       .from(activities)
-      .innerJoin(users, eq(activities.hostId, users.id))
+      .innerJoin(user, eq(activities.hostId, user.id))
       .leftJoin(interests, eq(activities.categoryId, interests.id))
       .orderBy(activities.createdAt);
 
@@ -39,16 +36,16 @@ const feedService = {
     const allParticipants = await db
       .select({
         activityId: activityParticipants.activityId,
-        userId: users.id,
-        username: users.username,
+        userId: user.id,
+        name: user.name,
       })
       .from(activityParticipants)
-      .innerJoin(users, eq(activityParticipants.userId, users.id))
+      .innerJoin(user, eq(activityParticipants.userId, user.id))
       .where(eq(activityParticipants.status, "accepted"));
 
     const participantsByActivity: Record<
       string,
-      { id: string; username: string }[]
+      { id: string; name: string }[]
     > = {};
     allParticipants.forEach((p) => {
       if (!participantsByActivity[p.activityId]) {
@@ -56,7 +53,7 @@ const feedService = {
       }
       participantsByActivity[p.activityId].push({
         id: p.userId,
-        username: p.username,
+        name: p.name,
       });
     });
 
@@ -70,50 +67,22 @@ const feedService = {
         id: row.activity.id,
         title: row.activity.title,
         description: row.activity.description,
-        event_date: row.activity.eventDate,
-        isHostVerified: row.host.isVerified,
+        eventDate: row.activity.eventDate,
         price: details.price,
         difficulty: details.difficulty,
-        duration_hours: details.duration_hours,
+        durationHours: details.durationHours,
         latitude: row.activity.latitude,
         longitude: row.activity.longitude,
-        max_participants: row.activity.maxParticipants,
+        maxParticipants: row.activity.maxParticipants,
         enrolledCount: participants.length,
         participants: participants,
         host: row.host,
         category: normalizedCategory,
         image: details.image,
-        price_breakdown: details.price_breakdown || [],
+        priceBreakdown: details.priceBreakdown || [],
       };
     });
     return feedActivitiesSchema.parse(activitiesList);
-  },
-
-  getGuides: async () => {
-    const db = getDb();
-
-    const result = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        bio: users.bio,
-        isVerified: users.isVerified,
-        interests: drizzleSql<string>`string_agg(${interests.name}, ', ')`,
-      })
-      .from(users)
-      .leftJoin(userInterests, eq(users.id, userInterests.userId))
-      .leftJoin(interests, eq(userInterests.interestId, interests.id))
-      .where(eq(users.role, "pro_guide"))
-      .groupBy(users.id, users.username, users.bio, users.isVerified);
-
-    const guides = result.map((g) => ({
-      id: g.id,
-      name: g.username,
-      details: g.interests ? `Expert en : ${g.interests}` : g.bio || "",
-      image: `https://i.pravatar.cc/150?u=${g.id}`,
-      isVerified: g.isVerified,
-    }));
-    return feedGuidesSchema.parse(guides);
   },
 };
 

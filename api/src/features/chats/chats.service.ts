@@ -1,6 +1,6 @@
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { getDb } from "../../db";
+import { db } from "../../db";
 import * as schema from "../../db/schema";
 import { chatsSchema, messagesSchema } from "./chats.schema";
 
@@ -8,13 +8,13 @@ const chatsService = {
   getChats: async (userId: string) => {
     const otherMembers = alias(schema.chatMembers, "otherMembers");
 
-    const result = await getDb()
+    const result = await db
       .select({
         id: schema.chats.id,
         title: sql<string>`
           CASE WHEN (${schema.chats.type} = 'group') 
           THEN ${schema.activities.title} 
-          ELSE CAST(${schema.users.username} AS VARCHAR) 
+          ELSE CAST(${schema.user.name} AS VARCHAR) 
           END`,
         activityId: schema.chats.activityId,
         type: schema.chats.type,
@@ -51,7 +51,7 @@ const chatsService = {
           eq(schema.chats.type, "private"),
         ),
       )
-      .leftJoin(schema.users, eq(otherMembers.userId, schema.users.id))
+      .leftJoin(schema.user, eq(otherMembers.userId, schema.user.id))
       .where(eq(schema.chatMembers.userId, userId));
 
     const parsedResult = chatsSchema.parse(result);
@@ -60,17 +60,17 @@ const chatsService = {
   },
 
   getChatMessagesById: async (userId: string, id: string) => {
-    const result = await getDb()
+    const result = await db
       .select({
         id: schema.messages.id,
         senderId: schema.messages.senderId,
-        senderUsername: schema.users.username,
+        senderName: schema.user.name,
         content: schema.messages.content,
         sentAt: schema.messages.sentAt,
         isSelfMessage: eq(schema.messages.senderId, userId),
       })
       .from(schema.messages)
-      .rightJoin(schema.users, eq(schema.messages.senderId, schema.users.id))
+      .rightJoin(schema.user, eq(schema.messages.senderId, schema.user.id))
       .innerJoin(schema.chats, eq(schema.messages.chatId, schema.chats.id))
       .innerJoin(
         schema.chatMembers,
@@ -89,7 +89,7 @@ const chatsService = {
   },
 
   checkMembership: async (chatId: string, userId: string) => {
-    const [membership] = await getDb()
+    const [membership] = await db
       .select({ id: schema.chatMembers.chatId })
       .from(schema.chatMembers)
       .where(
@@ -109,19 +109,19 @@ const chatsService = {
       throw new Error("User is not a member of this chat");
     }
 
-    const [message] = await getDb()
+    const [message] = await db
       .insert(schema.messages)
       .values({ chatId, senderId, content })
       .returning();
 
-    const [user] = await getDb()
-      .select({ username: schema.users.username })
-      .from(schema.users)
-      .where(eq(schema.users.id, senderId));
+    const [user] = await db
+      .select({ name: schema.user.name })
+      .from(schema.user)
+      .where(eq(schema.user.id, senderId));
 
     return {
       ...message,
-      senderUsername: user?.username || "Unknown",
+      senderName: user?.name || "Unknown",
     };
   },
 };

@@ -18,16 +18,16 @@ export const createActivityBodySchema = z.object({
     .union([z.number().min(-180).max(180), z.string()])
     .nullable()
     .optional(),
-  max_participants: z.number().int().positive().nullable().optional(),
-  min_age: z.number().int().positive().nullable().optional(),
-  max_age: z.number().int().positive().nullable().optional(),
-  auto_validate: z.boolean().optional(),
+  maxParticipants: z.number().int().positive().nullable().optional(),
+  minAge: z.number().int().positive().nullable().optional(),
+  maxAge: z.number().int().positive().nullable().optional(),
+  autoValidate: z.boolean().optional(),
   eventDate: z.coerce.date().nullable().optional(),
   price: z.number().nonnegative().nullable().optional(),
   difficulty: z.string().nullable().optional(),
-  duration_hours: z.number().nullable().optional(),
+  durationHours: z.number().nullable().optional(),
   image: z.string().nullable().optional(),
-  price_breakdown: z.array(priceBreakdownItemSchema).optional(),
+  priceBreakdown: z.array(priceBreakdownItemSchema).optional(),
   coverImage: z.string().nullable().optional(),
   locationCity: z.string().nullable().optional(),
 });

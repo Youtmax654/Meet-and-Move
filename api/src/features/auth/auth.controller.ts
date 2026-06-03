@@ -1,10 +1,8 @@
 import type { Context } from "hono";
-import {
-  userIdParamsSchema,
-  userPublicSchema,
-  usersPublicSchema,
-} from "./auth.schema";
+import { userIdParamsSchema } from "./auth.schema";
 import authService from "./auth.service";
+import { userPublicSchema, usersPublicSchema } from "../users/users.schema";
+import { parseParams } from "../../utils/http";
 
 export const getDevUsers = async (c: Context) => {
   const allUsers = await authService.getAllUsers();
@@ -12,12 +10,9 @@ export const getDevUsers = async (c: Context) => {
 };
 
 export const getDevUserById = async (c: Context) => {
-  const paramsParsed = userIdParamsSchema.safeParse(c.req.param());
-  if (!paramsParsed.success) {
-    return c.json(
-      { error: "Invalid params", details: paramsParsed.error.issues },
-      400,
-    );
+  const paramsParsed = parseParams(c, userIdParamsSchema);
+  if (!paramsParsed.ok) {
+    return paramsParsed.response;
   }
 
   const { id } = paramsParsed.data;

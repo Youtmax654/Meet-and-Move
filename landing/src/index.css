@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 * {
   box-sizing: border-box;
@@ -6,7 +6,7 @@
 
 body {
   margin: 0;
-  font-family: "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: "Manrope", "Space Grotesk", sans-serif;
   background: #f7f6f5;
   color: #2e2f2f;
   -webkit-font-smoothing: antialiased;
