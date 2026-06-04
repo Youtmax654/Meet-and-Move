@@ -4,7 +4,7 @@ import { ActivityDetails } from "@/features/experience/schemas/activity-details.
 
 export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
   const enrolledCount = activity?.enrolledCount || 0;
-  const maxParticipants = activity?.max_participants || 0;
+  const maxParticipants = activity?.maxParticipants || 0;
 
   return (
     <YStack backgroundColor="#F1F1F0" borderRadius={12} p={24} gap={24} mb={32}>
@@ -37,7 +37,7 @@ export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
               textAlign="center"
               numberOfLines={1}
             >
-              {activity?.host?.username || "Hôte"}
+              {activity?.host?.name || "Hôte"}
             </Text>
             <Text fontSize={10} fontWeight="400" color="#5B5C5B">
               (Hôte)
@@ -66,13 +66,13 @@ export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
                 textAlign="center"
                 numberOfLines={1}
               >
-                {participant.username}
+                {participant.name}
               </Text>
             </YStack>
           ))}
 
         {/* Bouton "Votre Place" si pas plein */}
-        {enrolledCount < (activity?.max_participants || 0) && (
+        {enrolledCount < (activity?.maxParticipants || 0) && (
           <YStack alignItems="center" gap={8} width={70}>
             <View
               width={56}

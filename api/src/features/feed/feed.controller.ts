@@ -4,13 +4,29 @@ import { getErrorMessage } from "../../utils/errors";
 
 export const getAllActivities = async (c: Context) => {
   try {
-    const activities = await feedService.getAllActivities();
+    const { lat, lng, radius, limit, offset } = c.req.query();
 
-    if (!activities || activities.length === 0) {
-      return c.json([], 200);
-    }
+    const params = {
+      lat: lat !== undefined ? Number(lat) : undefined,
+      lng: lng !== undefined ? Number(lng) : undefined,
+      radius: radius !== undefined ? Number(radius) : undefined,
+      limit: limit !== undefined ? Math.min(Number(limit), 50) : undefined,
+      offset: offset !== undefined ? Number(offset) : undefined,
+    };
 
-    return c.json(activities);
+    // Validate that lat/lng are both present or both absent
+    const hasLat = params.lat !== undefined && !isNaN(params.lat);
+    const hasLng = params.lng !== undefined && !isNaN(params.lng);
+
+    const result = await feedService.getActivities({
+      lat: hasLat && hasLng ? params.lat : undefined,
+      lng: hasLat && hasLng ? params.lng : undefined,
+      radius: !isNaN(params.radius ?? NaN) ? params.radius : undefined,
+      limit: !isNaN(params.limit ?? NaN) ? params.limit : undefined,
+      offset: !isNaN(params.offset ?? NaN) ? params.offset : undefined,
+    });
+
+    return c.json(result);
   } catch (error: unknown) {
     console.error("Error fetching activities:", error);
     const message = getErrorMessage(error) ?? String(error);

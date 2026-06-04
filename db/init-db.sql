@@ -18,7 +18,7 @@ create table if not exists "user"
         constraint user_phone_number_unique
             unique,
     phone_verified    boolean   default false             not null,
-    age               integer,
+    birth_date        date,
     gender            varchar,
     image             text,
     bio               text,
@@ -215,4 +215,3 @@ create table if not exists verification
 
 create index if not exists verification_identifier_idx
     on verification (identifier);
-
