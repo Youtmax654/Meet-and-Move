@@ -16,6 +16,8 @@ import {
   type CreateActivityPayload,
 } from "@/features/activities/activities.service";
 import { useToast } from "@/context/toast-context";
+import { pickImage } from "@/lib/upload";
+import type { ImagePickerAsset } from "expo-image-picker";
 
 const categoryOptions = [
   "Sport",
@@ -42,7 +44,20 @@ export default function CreateActivityScreen() {
   const [price, setPrice] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const [autoValidate, setAutoValidate] = useState(true);
+  const [coverAsset, setCoverAsset] = useState<ImagePickerAsset | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handlePickCover = async () => {
+    try {
+      const asset = await pickImage({ aspect: [16, 9] });
+      if (asset) {
+        setCoverAsset(asset);
+      }
+    } catch (error) {
+      console.error("Failed to pick cover image", error);
+      showToast("Impossible de sélectionner l'image", "error");
+    }
+  };
 
   const isFormReady = useMemo(
     () =>
@@ -63,19 +78,21 @@ export default function CreateActivityScreen() {
         categoryId: null,
         locationCity: location.trim(),
         eventDate,
-        auto_validate: autoValidate,
-        duration_hours: toNullableNumber(duration),
+        autoValidate,
+        durationHours: toNullableNumber(duration),
         price: toNullableNumber(price),
-        max_participants: toNullableNumber(maxParticipants),
+        maxParticipants: toNullableNumber(maxParticipants),
         difficulty: mapDifficulty(difficulty),
       };
 
-      const activity = await createActivity(payload);
-      showToast("Activite publiee avec succes", "success");
+      // The cover image (if picked) is uploaded within the same create request.
+      const activity = await createActivity(payload, coverAsset);
+
+      showToast("Activité publiée avec succès", "success");
       router.replace(`/experience/${activity.id}`);
     } catch (error) {
       console.error("Failed to create activity", error);
-      showToast("Impossible de publier l'activite", "error");
+      showToast("Impossible de publier l'activité", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +115,11 @@ export default function CreateActivityScreen() {
         >
           <YStack paddingTop={8} gap={20}>
             <CreateActivityHeader />
-            <CreateActivityHero />
+            <CreateActivityHero
+              coverImage={coverAsset?.uri ?? null}
+              uploading={isSubmitting}
+              onPickImage={handlePickCover}
+            />
             <MainInfoSection
               title={title}
               description={description}

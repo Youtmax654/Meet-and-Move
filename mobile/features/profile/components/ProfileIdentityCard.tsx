@@ -1,10 +1,10 @@
-import { Image } from "react-native";
+import { Image, type ImageSource } from "expo-image";
 import { Button, Text, XStack, YStack } from "tamagui";
 
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
 type ProfileIdentityCardProps = {
-  avatarUrl: string;
+  avatarSource: ImageSource;
   username: string;
   isVerified: boolean | null;
   email: string;
@@ -14,7 +14,7 @@ type ProfileIdentityCardProps = {
 };
 
 export function ProfileIdentityCard({
-  avatarUrl,
+  avatarSource,
   username,
   isVerified,
   email,
@@ -35,9 +35,9 @@ export function ProfileIdentityCard({
           backgroundColor="#E2E2E1"
         >
           <Image
-            source={{ uri: avatarUrl }}
+            source={avatarSource}
             style={{ width: "100%", height: "100%" }}
-            resizeMode="cover"
+            contentFit="cover"
           />
         </YStack>
         <YStack flex={1} gap={4}>

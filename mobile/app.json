@@ -47,7 +47,13 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "L'application accède à vos photos pour définir votre photo de profil et l'image de couverture de vos activités."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -20,7 +20,14 @@ export const authClient = createAuthClient({
   ],
 });
 
+/**
+ * Returns the current authenticated user's id, or null if not signed in.
+ *
+ * For React components, prefer the reactive `authClient.useSession()` hook:
+ *   const { data } = authClient.useSession();
+ *   const userId = data?.user?.id ?? null;
+ */
 export async function getUserId(): Promise<string | null> {
-  const session = await authClient.getSession();
-  return session?.data?.user?.id ?? null;
+  const { data } = await authClient.getSession();
+  return data?.user?.id ?? null;
 }

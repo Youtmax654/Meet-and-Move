@@ -17,7 +17,7 @@ export const chatsSchema = z.array(chatSchema);
 export const messageSchema = z.object({
   id: z.uuid(),
   senderId: z.uuid(),
-  senderUsername: z.string(),
+  senderName: z.string(),
   content: z.string().nullable(),
   sentAt: z.coerce.date(),
   isSelfMessage: z.boolean().optional(),

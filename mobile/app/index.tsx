@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { YStack, XStack, Input, Button, Text } from "tamagui";
 import { authClient } from "@/lib/auth-client";
 import { useAuthRedirect } from "@/hooks/use-auth-redirect";
+import { useToast } from "@/context/toast-context";
 
 export default function AuthIndexScreen() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const { checkingSession } = useAuthRedirect();
+  const { showToast } = useToast();
   const router = useRouter();
 
   const handleEmailSubmit = async () => {
@@ -27,15 +30,12 @@ export default function AuthIndexScreen() {
     }
   };
 
-  const handleSocialSignIn = async (provider: "google" | "apple") => {
-    try {
-      await authClient.signIn.social({
-        provider,
-        callbackURL: "meetandmove://",
-      });
-    } catch (err) {
-      console.error(err);
-    }
+  const handleSocialSignIn = (provider: "google" | "apple") => {
+    const label = provider === "google" ? "Google" : "Apple";
+    showToast(
+      `La connexion avec ${label} n'est pas encore disponible.`,
+      "info",
+    );
   };
 
   if (checkingSession) {
@@ -92,6 +92,7 @@ export default function AuthIndexScreen() {
           borderColor="#D6D7D6"
           height={50}
           backgroundColor="#FFFFFF"
+          icon={<Ionicons name="logo-google" size={20} color="#1E2228" />}
           onPress={() => handleSocialSignIn("google")}
         >
           <Button.Text color="#1E2228" fontWeight="600">
@@ -104,6 +105,7 @@ export default function AuthIndexScreen() {
           borderColor="#D6D7D6"
           height={50}
           backgroundColor="#FFFFFF"
+          icon={<Ionicons name="logo-apple" size={20} color="#1E2228" />}
           onPress={() => handleSocialSignIn("apple")}
         >
           <Button.Text color="#1E2228" fontWeight="600">

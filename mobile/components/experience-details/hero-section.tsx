@@ -2,6 +2,7 @@ import { ActivityDetails } from "@/features/experience/schemas/activity-details.
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Text, View } from "tamagui";
+import { apiImageSource } from "@/lib/image-source";
 
 export function HeroSection({ activity }: { activity?: ActivityDetails }) {
   return (
@@ -14,11 +15,10 @@ export function HeroSection({ activity }: { activity?: ActivityDetails }) {
       backgroundColor="#E2E2E1"
     >
       <Image
-        source={{
-          uri:
-            activity?.image ||
-            `https://loremflickr.com/800/600/nature?lock=${activity?.id ?? 1}`,
-        }}
+        source={apiImageSource(
+          activity ? `/activities/${activity.id}/image` : null,
+          `https://loremflickr.com/800/600/nature?lock=${activity?.id ?? 1}`,
+        )}
         style={{ width: "100%", height: "100%" }}
         contentFit="cover"
       />

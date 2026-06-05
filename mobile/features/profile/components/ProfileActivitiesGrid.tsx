@@ -54,6 +54,8 @@ export function ProfileActivitiesGrid({
           const cityLabel = activity.locationCity || "";
           const categoryLabel = activity.category?.name || "";
 
+          const imageUri = `${process.env.EXPO_PUBLIC_API_URL}/activities/${activity.id}/image`;
+
           return (
             <Pressable
               key={activity.id}
@@ -69,7 +71,7 @@ export function ProfileActivitiesGrid({
                 position="relative"
               >
                 <Image
-                  source={{ uri: activity.coverImage }}
+                  source={{ uri: imageUri }}
                   style={{ width: "100%", height: "100%" }}
                   resizeMode="cover"
                 />

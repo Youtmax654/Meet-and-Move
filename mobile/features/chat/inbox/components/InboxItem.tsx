@@ -20,6 +20,8 @@ export function InboxItem({
   item: InboxItemData;
   onPress?: () => void;
 }) {
+  const activityImageUri = `${process.env.EXPO_PUBLIC_API_URL}/activities/${item.id}/image`;
+
   return (
     <XStack
       padding="$3"
@@ -37,7 +39,7 @@ export function InboxItem({
     >
       <YStack>
         <Avatar circular size="$5">
-          <Avatar.Image src={item.avatarUrl || "https://picsum.photos/200"} />
+          <Avatar.Image src={activityImageUri} />
           <Avatar.Fallback backgroundColor="$gray5" />
         </Avatar>
         {item.online && (
