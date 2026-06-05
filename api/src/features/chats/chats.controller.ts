@@ -12,7 +12,10 @@ export const getChats = async (c: Context) => {
   }
   const { userId } = authResult;
 
-  const chats = await chatsService.getChats(userId);
+  const { type } = c.req.query();
+  const chatType = type === "group" || type === "private" ? type : undefined;
+
+  const chats = await chatsService.getChats(userId, chatType);
 
   return c.json(chats);
 };

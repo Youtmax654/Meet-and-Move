@@ -51,7 +51,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
   return (
     <Pressable onPress={() => router.push(`/experience/${activity.id}`)}>
       <YStack
-        width={280}
+        width="100%"
         height={350}
         borderRadius={24}
         backgroundColor="#FFFFFF"

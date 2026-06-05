@@ -16,7 +16,8 @@ type UserLocation = { lat: number; lng: number } | null;
 
 async function fetchFeedPage(
   location: UserLocation,
-  offset: number
+  offset: number,
+  search: string,
 ): Promise<FeedPage> {
   const params = new URLSearchParams({
     limit: String(LIMIT),
@@ -26,6 +27,9 @@ async function fetchFeedPage(
     params.set("lat", String(location.lat));
     params.set("lng", String(location.lng));
   }
+  if (search.trim()) {
+    params.set("search", search.trim());
+  }
   const response = await api.get(`/feed?${params.toString()}`);
   return feedPageSchema.parse(response.data);
 }
@@ -34,6 +38,13 @@ export function HomeScreen() {
   const [location, setLocation] = useState<UserLocation>(null);
   const [locationLabel, setLocationLabel] = useState<string | undefined>(undefined);
   const [locationReady, setLocationReady] = useState(false);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     (async () => {
@@ -65,9 +76,9 @@ export function HomeScreen() {
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ["home-feed", location],
+    queryKey: ["home-feed", location, debouncedSearch],
     queryFn: ({ pageParam }) =>
-      fetchFeedPage(location, pageParam as number),
+      fetchFeedPage(location, pageParam as number, debouncedSearch),
     getNextPageParam: (lastPage, _pages, lastPageParam) =>
       lastPage.hasMore ? (lastPageParam as number) + LIMIT : undefined,
     initialPageParam: 0,
@@ -105,7 +116,7 @@ export function HomeScreen() {
             Trouvez votre prochaine activité
           </Text>
 
-          <HomeSearchBar />
+          <HomeSearchBar value={search} onChangeText={setSearch} />
 
           {isLoading ? (
             <YStack
@@ -118,7 +129,7 @@ export function HomeScreen() {
                 Chargement des données...
               </Text>
             </YStack>
-          ) : !activities || activities.length === 0 ? (
+          ) : activities.length === 0 ? (
             <YStack
               alignItems="center"
               justifyContent="center"
@@ -129,7 +140,9 @@ export function HomeScreen() {
                 Aucune activité disponible
               </Text>
               <Text fontSize={14} color="#5B5C5B" textAlign="center">
-                {location
+                {search.trim()
+                  ? `Aucun résultat pour "${search}"`
+                  : location
                   ? "Aucune activité près de chez vous. Revenez plus tard !"
                   : "Revenez plus tard pour découvrir de nouvelles expériences !"}
               </Text>

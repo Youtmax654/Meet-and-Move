@@ -2,7 +2,12 @@ import React from 'react';
 import { XStack, Input } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 
-export function SearchBar() {
+type SearchBarProps = {
+  value: string;
+  onChangeText: (text: string) => void;
+};
+
+export function SearchBar({ value, onChangeText }: SearchBarProps) {
   return (
     <XStack
       backgroundColor="#F1F1F0"
@@ -18,7 +23,9 @@ export function SearchBar() {
         backgroundColor="transparent"
         borderWidth={0}
         color="#000"
-        placeholder="Search chats or squads..."
+        value={value}
+        onChangeText={onChangeText}
+        placeholder="Rechercher une conversation, un squad..."
         placeholderTextColor="$gray8"
         focusStyle={{ borderWidth: 0, outlineWidth: 0 }}
       />

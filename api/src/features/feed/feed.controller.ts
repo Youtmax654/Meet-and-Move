@@ -4,7 +4,7 @@ import { getErrorMessage } from "../../utils/errors";
 
 export const getAllActivities = async (c: Context) => {
   try {
-    const { lat, lng, radius, limit, offset } = c.req.query();
+    const { lat, lng, radius, limit, offset, search } = c.req.query();
 
     const params = {
       lat: lat !== undefined ? Number(lat) : undefined,
@@ -24,6 +24,7 @@ export const getAllActivities = async (c: Context) => {
       radius: !isNaN(params.radius ?? NaN) ? params.radius : undefined,
       limit: !isNaN(params.limit ?? NaN) ? params.limit : undefined,
       offset: !isNaN(params.offset ?? NaN) ? params.offset : undefined,
+      search: search?.trim() || undefined,
     });
 
     return c.json(result);

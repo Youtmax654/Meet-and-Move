@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, isNotNull, sql } from "drizzle-orm";
 import {
   activities,
   activityParticipants,
@@ -17,6 +17,7 @@ interface FeedParams {
   radius?: number;
   limit?: number;
   offset?: number;
+  search?: string;
 }
 
 // Haversine formula — returns distance in km
@@ -31,19 +32,19 @@ const feedService = {
     radius = DEFAULT_RADIUS_KM,
     limit = DEFAULT_LIMIT,
     offset = 0,
+    search,
   }: FeedParams) => {
     const hasLocation = lat !== undefined && lng !== undefined;
     const distanceExpr = hasLocation
       ? buildDistanceExpr(lat!, lng!)
       : null;
 
-    const whereClause = hasLocation
-      ? and(
-          isNotNull(activities.latitude),
-          isNotNull(activities.longitude),
-          sql`${distanceExpr} <= ${radius}`
-        )
-      : undefined;
+    const whereClause = and(
+      hasLocation ? isNotNull(activities.latitude) : undefined,
+      hasLocation ? isNotNull(activities.longitude) : undefined,
+      hasLocation ? sql`${distanceExpr} <= ${radius}` : undefined,
+      search?.trim() ? ilike(activities.title, `%${search.trim()}%`) : undefined,
+    );
 
     // Count total matching activities for hasMore calculation
     const countResult = await db

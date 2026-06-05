@@ -5,10 +5,19 @@ import { ScrollView, Text, YStack } from "tamagui";
 import { formatShortFrenchDate } from "@/lib/date";
 import { useInbox } from "../hooks/use-inbox";
 import { InboxItem } from "./InboxItem";
+import type { ChatFilter } from "./QuickFilters";
 
-export function InboxList() {
+type InboxListProps = {
+  search: string;
+  filter: ChatFilter;
+};
+
+export function InboxList({ search, filter }: InboxListProps) {
   const router = useRouter();
-  const { data: chats, isLoading, isError, error } = useInbox();
+  const apiType =
+    filter === "Squads" ? "group" : filter === "Individuels" ? "private" : undefined;
+
+  const { data: chats, isLoading, isError, error } = useInbox(apiType);
 
   if (isLoading) {
     return (
@@ -29,11 +38,23 @@ export function InboxList() {
     );
   }
 
-  if (!chats || chats.length === 0) {
+  const filtered = (chats ?? []).filter((chat) => {
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const matchTitle = (chat.title ?? "").toLowerCase().includes(q);
+      const matchMessage = (chat.lastMessage ?? "").toLowerCase().includes(q);
+      if (!matchTitle && !matchMessage) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
     return (
       <YStack flex={1} alignItems="center" justifyContent="center" padding="$4">
         <Text color="#888" textAlign="center">
-          Aucune conversation pour le moment.
+          {search.trim()
+            ? `Aucun résultat pour "${search}"`
+            : "Aucune conversation pour le moment."}
         </Text>
       </YStack>
     );
@@ -46,7 +67,7 @@ export function InboxList() {
       paddingHorizontal="$4"
     >
       <YStack gap="$4">
-        {chats.map((chat) => (
+        {filtered.map((chat) => (
           <InboxItem
             key={chat.id}
             item={{
