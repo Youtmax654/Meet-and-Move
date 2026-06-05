@@ -17,6 +17,8 @@ import {
   getCurrentUserActivities,
 } from "@/features/profile/profile.service";
 import { ProfileActivitiesGrid } from "@/features/profile/components/ProfileActivitiesGrid";
+import { apiImageSource } from "@/lib/image-source";
+import { getUserId } from "@/lib/auth-client";
 
 export default function ProfilScreen() {
   const router = useRouter();
@@ -53,8 +55,12 @@ export default function ProfilScreen() {
     : "-";
   const meetcoinsLabel = formatStatValue(profile.meetcoinsBalance);
   const levelLabel = String(profile.gamificationLevel ?? 1);
+  const userId = getUserId();
   const bannerUrl = getUserBannerUrl(profile.id);
-  const avatarUrl = getUserAvatarUrl(profile.id);
+  const avatarSource = apiImageSource(
+    `/users/${userId}/image`,
+    "https://imgs.search.brave.com/kloi-zWWknKoraC1e4fDjSEu4hcqeFKE8mTITnb7fCM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTQ5/NTA4ODA0My92ZWN0/b3IvdXNlci1wcm9m/aWxlLWljb24tYXZh/dGFyLW9yLXBlcnNv/bi1pY29uLXByb2Zp/bGUtcGljdHVyZS1w/b3J0cmFpdC1zeW1i/b2wtZGVmYXVsdC1w/b3J0cmFpdC5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9ZGhW/MnAxSndtbG9CVE9h/R0F0YUEzQVcxS1Nu/anNkTXQ3LVVfM0Va/RWxaMD0",
+  );
 
   return (
     <>
@@ -74,7 +80,7 @@ export default function ProfilScreen() {
 
             <YStack px={16} mt={-36} gap={16}>
               <ProfileIdentityCard
-                avatarUrl={avatarUrl}
+                avatarSource={avatarSource}
                 username={profile.name}
                 isVerified={profile.emailVerified}
                 email={profile.email}
@@ -114,7 +120,7 @@ export default function ProfilScreen() {
           shadowOffset={{ width: 0, height: 3 }}
           pressStyle={{ scale: 0.96 }}
           onPress={() => router.push("/activities/create")}
-          accessibilityLabel="Creer une activite"
+          accessibilityLabel="Créer une activité"
         >
           <Ionicons name="add" size={26} color="#FFFFFF" />
         </Circle>

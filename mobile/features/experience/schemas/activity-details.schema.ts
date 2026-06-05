@@ -2,14 +2,14 @@ import { z } from "zod";
 
 const participantSchema = z.object({
   id: z.string(),
-  username: z.string(),
+  name: z.string(),
   avatar: z.string().optional(),
 });
 
 const hostSchema = z.object({
   id: z.string(),
-  username: z.string(),
-  bio: z.string().optional(),
+  name: z.string(),
+  bio: z.string().nullable().optional(),
   avatar: z.string().optional(),
 });
 
@@ -27,11 +27,11 @@ const priceBreakdownItemSchema = z.object({
 export const activityDetailsSchema = z.object({
   id: z.string(),
   title: z.string(),
-  description: z.string(),
+  description: z.string().nullable(),
   image: z.string().optional(),
-  price: z.number().optional(),
-  difficulty: z.string().optional(),
-  duration_hours: z.number().optional(),
+  price: z.number().optional().nullable(),
+  difficulty: z.string().optional().nullable(),
+  durationHours: z.number().optional().nullable(),
   latitude: z.preprocess(
     (value) => (value == null || value === "" ? undefined : value),
     z.coerce.number().optional(),
@@ -40,13 +40,13 @@ export const activityDetailsSchema = z.object({
     (value) => (value == null || value === "" ? undefined : value),
     z.coerce.number().optional(),
   ),
-  max_participants: z.number().optional(),
+  maxParticipants: z.number().optional().nullable(),
   enrolledCount: z.number().optional(),
   participants: z.array(participantSchema).optional(),
   host: hostSchema.optional(),
   category: categorySchema.optional().nullable(),
-  price_breakdown: z.array(priceBreakdownItemSchema).optional(),
-  eventDate: z.string().optional(),
+  priceBreakdown: z.array(priceBreakdownItemSchema).optional(),
+  eventDate: z.coerce.date().optional().nullable(),
   chatId: z.string().optional(),
 });
 

@@ -7,13 +7,19 @@ import {
   interests,
   user,
 } from "../../db/schema";
-import { getActivityImageUrl, getAvatarUrl } from "../../utils/image";
+import {
+  getActivityImageUrl,
+  getAvatarUrl,
+  publicUserImage,
+} from "../../utils/image";
 import {
   activitySchema,
   joinedActivitiesSchema,
   type CreateActivityBody,
 } from "./schemas";
 import { db } from "../../db";
+import { assertValidImage, uploadImageToKey } from "../uploads/uploads.service";
+import { getObject } from "../../utils/s3";
 
 const activitiesService = {
   getActivityById: async (id: string) => {
@@ -24,6 +30,7 @@ const activitiesService = {
           id: user.id,
           name: user.name,
           bio: user.bio,
+          image: user.image,
         },
         category: {
           id: interests.id,
@@ -50,6 +57,7 @@ const activitiesService = {
       .select({
         id: user.id,
         name: user.name,
+        image: user.image,
       })
       .from(activityParticipants)
       .innerJoin(user, eq(activityParticipants.userId, user.id))
@@ -60,10 +68,13 @@ const activitiesService = {
         ),
       );
 
-    // Format participants with their avatars
+    // Format participants with their avatars. When a participant uploaded a
+    // profile photo we expose it through the authenticated API route
+    // (`/users/<id>/image`); otherwise we fall back to a generated avatar.
     const participantsWithAvatars = participantsListFiltered.map((p) => ({
-      ...p,
-      avatar: getAvatarUrl(p.id),
+      id: p.id,
+      name: p.name,
+      avatar: publicUserImage(p.id, p.image) ?? getAvatarUrl(p.id),
     }));
 
     // Fetch the chat ID linked to the activity
@@ -79,9 +90,12 @@ const activitiesService = {
       id: row.activity.id,
       title: row.activity.title,
       description: row.activity.description,
-      image:
-        details.image ||
-        getActivityImageUrl(row.category?.name || undefined, row.activity.id),
+      // When a cover has been uploaded, expose it through the authenticated API
+      // route (the mobile attaches the session cookie). Otherwise fall back to a
+      // generated external image.
+      image: details.image
+        ? `/activities/${row.activity.id}/image`
+        : getActivityImageUrl(row.category?.name || undefined, row.activity.id),
       price: details.price,
       difficulty: details.difficulty,
       durationHours: details.durationHours,
@@ -92,8 +106,12 @@ const activitiesService = {
       participants: participantsWithAvatars,
       chatId,
       host: {
-        ...row.host,
-        avatar: getAvatarUrl(row.host.id),
+        id: row.host.id,
+        name: row.host.name,
+        bio: row.host.bio,
+        avatar:
+          publicUserImage(row.host.id, row.host.image) ??
+          getAvatarUrl(row.host.id),
       },
       category: normalizedCategory,
       priceBreakdown: details.priceBreakdown || [],
@@ -259,7 +277,17 @@ const activitiesService = {
     return joinedActivitiesSchema.parse(joinedActivities);
   },
 
-  createActivity: async (hostId: string, payload: CreateActivityBody) => {
+  createActivity: async (
+    hostId: string,
+    payload: CreateActivityBody,
+    image?: { contentType: string; bytes: ArrayBuffer } | null,
+  ) => {
+    // Validate the image up front so an invalid file rejects the whole request
+    // before any activity row is created.
+    if (image) {
+      assertValidImage(image.contentType, image.bytes.byteLength);
+    }
+
     const specificDetailsRaw = {
       price: payload.price ?? undefined,
       difficulty: payload.difficulty ?? undefined,
@@ -338,7 +366,57 @@ const activitiesService = {
       return { activityId: createdActivity.id };
     });
 
+    // Now that the activity exists, store its cover under a key derived from the
+    // id (`activities/<id>/image`) so the public URL is stable.
+    if (image) {
+      const url = await uploadImageToKey(
+        `activities/${activityId}/image`,
+        image.contentType,
+        image.bytes,
+      );
+
+      const [row] = await db
+        .select({ specificDetails: activities.specificDetails })
+        .from(activities)
+        .where(eq(activities.id, activityId))
+        .limit(1);
+
+      const details = (row?.specificDetails as Record<string, unknown>) || {};
+      await db
+        .update(activities)
+        .set({ specificDetails: { ...details, image: url, coverImage: url } })
+        .where(eq(activities.id, activityId));
+    }
+
     return activitiesService.getActivityById(activityId);
+  },
+
+  /**
+   * Stream an activity's cover image from S3/MinIO. Returns the raw S3 Response
+   * (caller checks `.ok` for a 404). The key is derived from the activity id.
+   */
+  getActivityImage: async (activityId: string) => {
+    const key = `activities/${activityId}/image`;
+
+    console.debug(
+      `Fetching image for activity ${activityId} from S3 with key ${key}`,
+    );
+    const s3Response = await getObject(key);
+    console.debug(`S3 response status:`, s3Response.status);
+
+    if (!s3Response.ok) {
+      throw new Error("Image introuvable");
+    }
+
+    const contentType = s3Response.headers.get("content-type") || "image/jpeg";
+    const contentLength = s3Response.headers.get("content-length") || "";
+    const imageBuffer = await s3Response.arrayBuffer();
+
+    return {
+      imageBuffer,
+      contentType,
+      contentLength,
+    };
   },
 };
 

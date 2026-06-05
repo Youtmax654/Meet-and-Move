@@ -30,7 +30,7 @@ export function MessageList({ messages }: MessageListProps) {
               key={msg.id}
               id={msg.id}
               text={msg.content || ""}
-              senderName={msg.senderUsername}
+              senderName={msg.senderName}
               timestamp={msg.sentAt.toLocaleString() || ""}
               isSelf={!!msg.isSelfMessage}
               avatarUrl={""}

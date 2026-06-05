@@ -2,6 +2,8 @@ import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import { activities, interests, user } from "../../db/schema";
 import { getActivityImageUrl } from "../../utils/image";
+import { uploadImageToKey } from "../uploads/uploads.service";
+import { getObject } from "../../utils/s3";
 import type { UpdateUserBody } from "./users.schema";
 
 const usersService = {
@@ -43,20 +45,46 @@ const usersService = {
     });
   },
 
-  updateUserProfile: async (userId: string, payload: UpdateUserBody) => {
+  /**
+   * Update the current user's profile and, if an avatar is provided in the same
+   * request, upload it first. The avatar key is derived from the user id
+   * (`profile/<userId>/image`), so its public URL is stable and each upload
+   * overwrites the previous image.
+   */
+  updateUserProfile: async (
+    userId: string,
+    payload: UpdateUserBody,
+    image?: { contentType: string; bytes: ArrayBuffer } | null,
+  ) => {
+    const imageUrl = image
+      ? await uploadImageToKey(
+          `profile/${userId}/image`,
+          image.contentType,
+          image.bytes,
+        )
+      : undefined;
+
     const [updatedUser] = await db
       .update(user)
       .set({
         name: payload.name,
         birthDate: payload.birthDate.toISOString(),
         gender: payload.gender,
-        image: payload.image ?? null,
         bio: payload.bio ?? null,
+        ...(imageUrl ? { image: imageUrl } : {}),
       })
       .where(eq(user.id, userId))
       .returning();
 
     return updatedUser ?? null;
+  },
+
+  /**
+   * Stream a user's avatar from S3/MinIO. Returns the raw S3 Response (caller
+   * checks `.ok` for a 404). The key is derived from the user id.
+   */
+  getUserImage: async (userId: string) => {
+    return getObject(`profile/${userId}/image`);
   },
 };
 

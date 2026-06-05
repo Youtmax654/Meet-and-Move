@@ -1,8 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React from "react";
 import { Text, YStack } from "tamagui";
 
-export function CreateActivityHero() {
+type CreateActivityHeroProps = {
+  coverImage: string | null;
+  uploading: boolean;
+  onPickImage: () => void;
+};
+
+export function CreateActivityHero({
+  coverImage,
+  uploading,
+  onPickImage,
+}: CreateActivityHeroProps) {
   return (
     <YStack
       backgroundColor="#FFFFFF"
@@ -25,11 +36,24 @@ export function CreateActivityHero() {
         alignItems="center"
         justifyContent="center"
         gap={8}
+        overflow="hidden"
+        pressStyle={{ opacity: 0.85 }}
+        onPress={uploading ? undefined : onPickImage}
       >
-        <Ionicons name="image" size={28} color="#9B9B9A" />
-        <Text fontSize={12} color="#6B727B">
-          Ajouter une photo de couverture
-        </Text>
+        {coverImage ? (
+          <Image
+            source={{ uri: coverImage }}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+          />
+        ) : (
+          <>
+            <Ionicons name="image" size={28} color="#9B9B9A" />
+            <Text fontSize={12} color="#6B727B">
+              {uploading ? "Import en cours..." : "Ajouter une photo de couverture"}
+            </Text>
+          </>
+        )}
       </YStack>
     </YStack>
   );

@@ -51,6 +51,7 @@
 | **Backend API** | Hono (Cloudflare Workers) |
 | **Database** | PostgreSQL (Docker) |
 | **Cache / Pub-Sub** | Redis Alpine (Docker) |
+| **Object Storage** | MinIO (S3-compatible, Docker) — R2/S3 in prod |
 | **ORM** | Drizzle ORM + drizzle-kit |
 | **Authentication** | Better Auth (email OTP, Google, Apple) |
 | **Validation** | Zod v4 |
@@ -82,9 +83,42 @@ Meet-and-Move/
     src/
       components/ # Hero, Features, FAQ, CTA sections
   db/           # Database configuration
-    compose.yaml  # Docker Compose (PostgreSQL + Redis)
+    compose.yaml  # Docker Compose (PostgreSQL + Redis + MinIO/S3)
     init-db.sql   # Schema + seed data
 ```
+
+### 🖼️ Image storage
+
+Images are uploaded through the API and stored in an S3-compatible bucket. In
+local development this is **MinIO** (started by Docker Compose); in production
+the same `S3_*` env vars can point at Cloudflare R2 or AWS S3.
+
+Image uploads happen **inside** the entity's create/update request — a single
+`multipart/form-data` call with a `data` field (the JSON payload) and an optional
+`file` field. The object key is derived from the entity id, so re-uploading
+**overwrites** the previous image and the public URL is **stable**:
+
+- `PATCH /users/me` (multipart: `data` + optional `file`) → stores
+  `profile/<userId>/image` and sets `user.image`.
+- `POST /activities` (multipart: `data` + optional `file`) → stores
+  `activities/<activityId>/image` in the same request that creates the activity.
+- Accepted: JPEG / PNG / WebP, ≤ 5 MB. Both routes still accept plain JSON when
+  no image is sent.
+
+Images are read back through **authenticated** API routes that stream the object
+from S3:
+
+- `GET /activities/:id/image` → streams the activity cover. `GET /activities/:id`
+  returns `image: "/activities/<id>/image"` (a relative path) when a cover exists.
+- `GET /users/:id/image` → streams a user avatar. `GET /users/me` returns
+  `image: "/users/<id>/image"` for uploaded avatars (external URLs, e.g. social
+  login, are passed through untouched).
+- In both cases the mobile builds the full URL and attaches the session cookie
+  (see `lib/image-source.ts`).
+- MinIO console: `http://localhost:9001` (user `meetandmove`, password
+  `meetandmove-secret`). See [db/README.md](db/README.md) for details.
+- On a physical device, set `S3_PUBLIC_URL` (api) and `EXPO_PUBLIC_API_URL`
+  (mobile) to your machine's LAN IP instead of `localhost`.
 
 ## Getting Started
 

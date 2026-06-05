@@ -14,3 +14,40 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+
+  # S3-compatible object storage for images (local dev replacement for Cloudflare R2 / AWS S3)
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: meetandmove
+      MINIO_ROOT_PASSWORD: meetandmove-secret
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console (http://localhost:9001)
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot init: create the bucket and make it publicly readable (dev only)
+  minio-init:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 meetandmove meetandmove-secret; do
+        echo 'Waiting for MinIO...' && sleep 1;
+      done;
+      mc mb --ignore-existing local/meetandmove;
+      mc anonymous set download local/meetandmove;
+      echo 'MinIO bucket \"meetandmove\" is ready and publicly readable.';
+      "
+
+volumes:
+  minio-data:

@@ -2,7 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { TextInput } from 'react-native';
 import { XStack } from 'tamagui';
 
-export function HomeSearchBar() {
+type HomeSearchBarProps = {
+    value: string;
+    onChangeText: (text: string) => void;
+};
+
+export function HomeSearchBar({ value, onChangeText }: HomeSearchBarProps) {
     return (
         <XStack
             height={50}
@@ -17,9 +22,13 @@ export function HomeSearchBar() {
         >
             <Ionicons name="search" size={18} color="#9CA3AF" />
             <TextInput
-                placeholder="Chercher une expérience, une activité, un souvenir..."
+                value={value}
+                onChangeText={onChangeText}
+                placeholder="Chercher une activité, une ville..."
                 placeholderTextColor="#9CA3AF"
                 style={{ flex: 1, fontSize: 14, color: '#31343A' }}
+                returnKeyType="search"
+                clearButtonMode="while-editing"
             />
         </XStack>
     );

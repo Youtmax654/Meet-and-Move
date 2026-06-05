@@ -13,6 +13,11 @@ type TripCardProps = {
 export function TripCard({ trip }: TripCardProps) {
   const router = useRouter();
 
+  const imageUri = `${process.env.EXPO_PUBLIC_API_URL}/activities/${trip.id}/image`;
+  console.debug(
+    `Rendering TripCard for trip ${trip.id} with cover image ${imageUri}`,
+  );
+
   return (
     <YStack
       backgroundColor="#FFFFFF"
@@ -29,7 +34,7 @@ export function TripCard({ trip }: TripCardProps) {
     >
       <YStack position="relative" height={160}>
         <Image
-          source={{ uri: trip.coverImage }}
+          source={{ uri: imageUri }}
           style={{
             width: "100%",
             height: "100%",
