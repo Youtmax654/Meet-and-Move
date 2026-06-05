@@ -1,9 +1,10 @@
-import { api, getUserId } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import EventSource from "react-native-sse";
 import { Message, messageSchema } from "../../shared/schemas/chat.schema";
 import { THREAD_QUERY_KEY } from "./use-thread";
+import { authClient, getUserId } from "@/lib/auth-client";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8787";
 
@@ -23,19 +24,22 @@ export function useChatSse(chatId: string) {
     let isMounted = true;
 
     const connectSse = async () => {
-      const userId = await getUserId();
+      const cookie = await authClient.getCookie();
 
       if (!isMounted) return;
-      if (!userId) {
+      if (!cookie) {
         console.error("Not authenticated, cannot connect to chat SSE");
         return;
       }
+
+      // Used below to flag incoming messages sent by the current user.
+      const userId = await getUserId();
 
       const url = `${API_BASE_URL}/chats/${chatId}/stream`;
 
       es = new EventSource(url, {
         headers: {
-          "X-Debug-User-Id": userId,
+          Cookie: cookie,
         },
       });
       esRef.current = es;
@@ -108,7 +112,7 @@ export function useChatSse(chatId: string) {
       const optimisticMessage: Message = {
         id: tempId,
         senderId: userId,
-        senderUsername: "You",
+        senderName: "You",
         content,
         sentAt: new Date(),
         isSelfMessage: true,

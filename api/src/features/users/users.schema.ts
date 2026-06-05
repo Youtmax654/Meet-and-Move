@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const userIdParamsSchema = z.object({
+  id: z.uuid(),
+});
+
 export const userPublicSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -38,7 +42,6 @@ export const updateUserBodySchema = z.object({
   name: z.string().trim().min(1),
   birthDate: z.coerce.date(),
   gender: z.string().trim().min(1),
-  image: z.url().nullable().optional(),
   bio: z.string().trim().min(1).nullable().optional(),
 });
 

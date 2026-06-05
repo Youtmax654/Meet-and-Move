@@ -4,7 +4,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Input, Text, TextArea, XStack, YStack } from "tamagui";
-import { api } from "@/lib/api";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import type { ImagePickerAsset } from "expo-image-picker";
+import { pickImage, requestWithOptionalImage } from "@/lib/upload";
 
 const genderOptions = [
   { label: "Homme", value: "male" },
@@ -16,7 +19,7 @@ export default function SignupScreen() {
   const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [gender, setGender] = useState<string | null>(null);
-  const [image, setImage] = useState("");
+  const [imageAsset, setImageAsset] = useState<ImagePickerAsset | null>(null);
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -33,13 +36,18 @@ export default function SignupScreen() {
     setLoading(true);
 
     try {
-      await api.patch("/users/me", {
-        name: name.trim(),
-        birthDate: birthDate.toISOString(),
-        gender,
-        image: image.trim() ? image.trim() : null,
-        bio: bio.trim() ? bio.trim() : null,
-      });
+      // The avatar (if picked) is uploaded within the same PATCH request.
+      await requestWithOptionalImage(
+        "/users/me",
+        "PATCH",
+        {
+          name: name.trim(),
+          birthDate: birthDate.toISOString(),
+          gender,
+          bio: bio.trim() ? bio.trim() : null,
+        },
+        imageAsset,
+      );
 
       router.replace("/(tabs)");
     } catch (error) {
@@ -47,6 +55,19 @@ export default function SignupScreen() {
       setErrorMessage("Impossible d'enregistrer votre profil.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePickImage = async () => {
+    setErrorMessage(null);
+    try {
+      const asset = await pickImage({ aspect: [1, 1] });
+      if (asset) {
+        setImageAsset(asset);
+      }
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Impossible de sélectionner la photo. Réessayez.");
     }
   };
 
@@ -143,15 +164,43 @@ export default function SignupScreen() {
           <Text fontSize={14} color="#1E2228" fontWeight="600">
             Photo (optionnel)
           </Text>
-          <Input
-            placeholder="Lien vers votre photo"
-            value={image}
-            onChangeText={setImage}
-            backgroundColor="#FFFFFF"
-            borderColor="#E2E2E1"
-            height={50}
-            disabled={loading}
-          />
+          <XStack alignItems="center" gap={14}>
+            <YStack
+              width={84}
+              height={84}
+              borderRadius={42}
+              backgroundColor="#EDECEA"
+              borderWidth={1}
+              borderColor="#E2E2E1"
+              alignItems="center"
+              justifyContent="center"
+              overflow="hidden"
+            >
+              {imageAsset ? (
+                <Image
+                  source={{ uri: imageAsset.uri }}
+                  style={{ width: 84, height: 84 }}
+                  contentFit="cover"
+                />
+              ) : (
+                <Ionicons name="person" size={32} color="#9B9B9A" />
+              )}
+            </YStack>
+            <Button
+              flex={1}
+              backgroundColor="#FFFFFF"
+              borderColor="#E2E2E1"
+              borderWidth={1}
+              borderRadius={12}
+              height={44}
+              disabled={loading}
+              onPress={handlePickImage}
+            >
+              <Button.Text color="#1E2228" fontWeight="600">
+                {imageAsset ? "Changer la photo" : "Choisir une photo"}
+              </Button.Text>
+            </Button>
+          </XStack>
         </YStack>
 
         <YStack gap={6}>

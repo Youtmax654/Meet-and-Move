@@ -88,8 +88,8 @@ export function PriceBreakdown({ activity }: { activity?: ActivityDetails }) {
   ];
 
   const breakdown =
-    activity?.price_breakdown && activity.price_breakdown.length > 0
-      ? activity.price_breakdown
+    activity?.priceBreakdown && activity.priceBreakdown.length > 0
+      ? activity.priceBreakdown
       : defaultBreakdown;
 
   // Calcul des segments

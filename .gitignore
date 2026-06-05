@@ -3,3 +3,5 @@ node_modules/
 
 mprocs.log
 .env
+
+graphify-out/

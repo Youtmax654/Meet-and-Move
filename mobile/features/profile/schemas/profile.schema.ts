@@ -26,7 +26,8 @@ export const profileSchema = z.object({
   phoneVerified: z.boolean(),
   birthDate: z.coerce.date().nullable(),
   gender: z.string().nullable(),
-  image: z.url().nullable(),
+  // Relative API path (e.g. /users/<id>/image) or an absolute external URL.
+  image: z.string().nullable(),
   bio: z.string().nullable(),
   meetcoinsBalance: z.number().int(),
   createdAt: z.coerce.date(),

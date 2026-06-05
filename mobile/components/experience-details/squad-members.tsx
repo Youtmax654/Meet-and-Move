@@ -1,10 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { ImageSourcePropType } from "react-native";
 import { Avatar, Text, View, XStack, YStack } from "tamagui";
 import { ActivityDetails } from "@/features/experience/schemas/activity-details.schema";
+import { apiImageSource } from "@/lib/image-source";
 
 export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
   const enrolledCount = activity?.enrolledCount || 0;
-  const maxParticipants = activity?.max_participants || 0;
+  const maxParticipants = activity?.maxParticipants || 0;
+
+  const hostImageUri = `${process.env.EXPO_PUBLIC_API_URL}/users/${activity?.host?.id}/image`;
 
   return (
     <YStack backgroundColor="#F1F1F0" borderRadius={12} p={24} gap={24} mb={32}>
@@ -22,9 +26,11 @@ export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
         <YStack alignItems="center" gap={8} width={70}>
           <Avatar circular size={56} borderColor="#006666" borderWidth={2}>
             <Avatar.Image
-              src={
-                activity?.host?.avatar ||
-                `https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`
+              source={
+                apiImageSource(
+                  hostImageUri,
+                  `https://i.pravatar.cc/150?u=${activity?.host?.id || "host"}`,
+                ) as ImageSourcePropType
               }
             />
             <Avatar.Fallback backgroundColor="#006666" />
@@ -37,7 +43,7 @@ export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
               textAlign="center"
               numberOfLines={1}
             >
-              {activity?.host?.username || "Hôte"}
+              {activity?.host?.name || "Hôte"}
             </Text>
             <Text fontSize={10} fontWeight="400" color="#5B5C5B">
               (Hôte)
@@ -52,9 +58,11 @@ export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
             <YStack key={participant.id} alignItems="center" gap={8} width={70}>
               <Avatar circular size={56}>
                 <Avatar.Image
-                  src={
-                    participant.avatar ||
-                    `https://i.pravatar.cc/150?u=${participant.id}`
+                  source={
+                    apiImageSource(
+                      `${process.env.EXPO_PUBLIC_API_URL}/users/${participant.id}/image`,
+                      `https://i.pravatar.cc/150?u=${participant.id}`,
+                    ) as ImageSourcePropType
                   }
                 />
                 <Avatar.Fallback backgroundColor="#ADADAC" />
@@ -66,13 +74,13 @@ export function SquadMembers({ activity }: { activity?: ActivityDetails }) {
                 textAlign="center"
                 numberOfLines={1}
               >
-                {participant.username}
+                {participant.name}
               </Text>
             </YStack>
           ))}
 
         {/* Bouton "Votre Place" si pas plein */}
-        {enrolledCount < (activity?.max_participants || 0) && (
+        {enrolledCount < (activity?.maxParticipants || 0) && (
           <YStack alignItems="center" gap={8} width={70}>
             <View
               width={56}

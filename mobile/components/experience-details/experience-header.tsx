@@ -24,8 +24,8 @@ export function ExperienceHeader({ activity }: { activity?: ActivityDetails }) {
           gap={6}
         >
           <Text fontSize={14} fontWeight="500" color="#2E2F2F">
-            {activity?.duration_hours
-              ? `${activity.duration_hours} Heures`
+            {activity?.durationHours
+              ? `${activity.durationHours} Heures`
               : "Durée non précisée"}
           </Text>
         </View>
@@ -41,10 +41,10 @@ export function ExperienceHeader({ activity }: { activity?: ActivityDetails }) {
         >
           <Text fontSize={14} fontWeight="500" color="#2E2F2F">
             {activity?.enrolledCount !== undefined
-              ? `${activity.enrolledCount}/${activity.max_participants || "?"}` +
+              ? `${activity.enrolledCount}/${activity.maxParticipants || "?"}` +
                 " personnes"
-              : activity?.max_participants
-                ? `${activity.max_participants} Max`
+              : activity?.maxParticipants
+                ? `${activity.maxParticipants} Max`
                 : "Places limitées"}
           </Text>
         </View>

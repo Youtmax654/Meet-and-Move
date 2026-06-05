@@ -3,6 +3,7 @@ import { z } from "zod";
 const participantSchema = z.object({
   id: z.uuid(),
   name: z.string(),
+  image: z.string().nullable().optional(),
 });
 
 const hostSchema = z.object({
@@ -35,6 +36,8 @@ export const feedActivitySchema = z.object({
   durationHours: z.number().nullable().optional(),
   latitude: z.union([z.number().min(-90).max(90), z.string()]).nullable(),
   longitude: z.union([z.number().min(-180).max(180), z.string()]).nullable(),
+  distance: z.number().nullable().optional(),
+  locationCity: z.string().nullable().optional(),
   maxParticipants: z.number().int().positive().nullable(),
   enrolledCount: z.number(),
   participants: z.array(participantSchema),
@@ -45,6 +48,12 @@ export const feedActivitySchema = z.object({
 });
 
 export const feedActivitiesSchema = z.array(feedActivitySchema);
+
+export const feedResponseSchema = z.object({
+  activities: feedActivitiesSchema,
+  hasMore: z.boolean(),
+  total: z.number().int(),
+});
 
 export const feedGuideSchema = z.object({
   id: z.uuid(),
@@ -57,3 +66,4 @@ export const feedGuideSchema = z.object({
 export const feedGuidesSchema = z.array(feedGuideSchema);
 
 export type FeedActivity = z.infer<typeof feedActivitySchema>;
+export type FeedResponse = z.infer<typeof feedResponseSchema>;

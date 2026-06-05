@@ -8,7 +8,7 @@ import { db } from "../db/index";
 
 export const auth = betterAuth({
   basePath: "/auth",
-  trustedOrigins: ["meetandmove://", "http://localhost:8081"],
+  trustedOrigins: ["meetandmove://", "http://localhost:8081", "*"],
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
     schema,

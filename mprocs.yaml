@@ -19,3 +19,8 @@ procs:
       $select: os
       windows: ["cmd", "/c", "cd db && docker compose up redis"]
       linux: ["sh", "-c", "cd db && docker compose up redis"]
+  MinIO:
+    cmd:
+      $select: os
+      windows: ["cmd", "/c", "cd db && docker compose up minio minio-init"]
+      linux: ["sh", "-c", "cd db && docker compose up minio minio-init"]
