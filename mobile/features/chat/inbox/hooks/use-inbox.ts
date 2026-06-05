@@ -4,11 +4,12 @@ import { chatsSchema, type Chat } from "../../shared/schemas/chat.schema";
 
 export const INBOX_QUERY_KEY = ["inbox"] as const;
 
-export function useInbox() {
+export function useInbox(type?: "group" | "private") {
   return useQuery<Chat[]>({
-    queryKey: INBOX_QUERY_KEY,
+    queryKey: [...INBOX_QUERY_KEY, type],
     queryFn: async () => {
-      const { data } = await api.get("/chats");
+      const params = type ? `?type=${type}` : "";
+      const { data } = await api.get(`/chats${params}`);
       return chatsSchema.parse(data);
     },
   });

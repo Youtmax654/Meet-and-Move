@@ -1,4 +1,5 @@
-import { api, getUserId } from "@/lib/api";
+import { api } from "@/lib/api";
+import { getUserId } from "@/lib/auth-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import EventSource from "react-native-sse";

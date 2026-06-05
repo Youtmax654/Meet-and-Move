@@ -19,3 +19,8 @@ export const authClient = createAuthClient({
     emailOTPClient(),
   ],
 });
+
+export async function getUserId(): Promise<string | null> {
+  const session = await authClient.getSession();
+  return session?.data?.user?.id ?? null;
+}

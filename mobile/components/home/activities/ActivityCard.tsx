@@ -11,13 +11,47 @@ type ActivityCardProps = {
   activity: Activity;
 };
 
+function formatDate(date: Date | null): string {
+  if (!date) return "Date à confirmer";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
+
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(1)} km`;
+}
+
+function formatPrice(price: number | null | undefined): string {
+  if (price === null || price === undefined || price === 0) return "Gratuit";
+  return `${price}€`;
+}
+
+function buildLocationLabel(activity: Activity): string {
+  const parts: string[] = [];
+  if (activity.distance != null) parts.push(formatDistance(activity.distance));
+  if (activity.locationCity) parts.push(activity.locationCity);
+  if (parts.length > 0) return parts.join(" • ");
+  return activity.host.name;
+}
+
 export function ActivityCard({ activity }: ActivityCardProps) {
   const router = useRouter();
+
+  const avatarImages = activity.participants
+    .filter((p) => p.image)
+    .slice(0, 3)
+    .map((p) => p.image as string);
+
+  const extraCount = activity.enrolledCount - avatarImages.length;
+  const extra = extraCount > 0 ? `+${extraCount}` : `+0`;
 
   return (
     <Pressable onPress={() => router.push(`/experience/${activity.id}`)}>
       <YStack
-        width={280}
+        width="100%"
         height={350}
         borderRadius={24}
         backgroundColor="#FFFFFF"
@@ -50,7 +84,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             backgroundColor="rgba(247,246,245,0.8)"
           >
             <Text fontSize={12} color="#2E2F2E" fontWeight="600">
-              {activity.date}
+              {formatDate(activity.eventDate)}
             </Text>
           </XStack>
         </YStack>
@@ -74,9 +108,9 @@ export function ActivityCard({ activity }: ActivityCardProps) {
 
             <XStack alignItems="center" gap={8}>
               <Text fontSize={14} color="#5B5C5B" fontWeight="500">
-                {activity.location}
+                {buildLocationLabel(activity)}
               </Text>
-              {activity.isHostVerified && (
+              {activity.host.emailVerified && (
                 <Ionicons name="checkmark-circle" size={16} color="#006666" />
               )}
             </XStack>
@@ -88,10 +122,9 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             paddingTop={12}
             marginTop="auto"
           >
-            <AvatarGroup avatars={activity.avatars} extra={activity.extra} />
+            <AvatarGroup avatars={avatarImages} extra={extra} />
             <Text fontSize={18} fontWeight="800" color="#4953AC">
-              {activity.price}
-              {!String(activity.price).includes("€") ? "€" : ""}
+              {formatPrice(activity.price)}
             </Text>
           </XStack>
         </YStack>

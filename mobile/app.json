@@ -28,6 +28,13 @@
     "plugins": [
       "expo-router",
       [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Meet&Move utilise votre position pour afficher les activités près de chez vous.",
+          "locationWhenInUsePermission": "Meet&Move utilise votre position pour afficher les activités près de chez vous."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",

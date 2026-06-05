@@ -5,7 +5,7 @@ import * as schema from "../../db/schema";
 import { chatsSchema, messagesSchema } from "./chats.schema";
 
 const chatsService = {
-  getChats: async (userId: string) => {
+  getChats: async (userId: string, type?: "group" | "private") => {
     const otherMembers = alias(schema.chatMembers, "otherMembers");
 
     const result = await db
@@ -52,7 +52,12 @@ const chatsService = {
         ),
       )
       .leftJoin(schema.user, eq(otherMembers.userId, schema.user.id))
-      .where(eq(schema.chatMembers.userId, userId));
+      .where(
+        and(
+          eq(schema.chatMembers.userId, userId),
+          type ? eq(schema.chats.type, type) : undefined,
+        ),
+      );
 
     const parsedResult = chatsSchema.parse(result);
 
